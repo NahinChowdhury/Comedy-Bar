@@ -16,7 +16,6 @@ export const Login:FunctionComponent = () => {
         }
 
         // make a request to the backend to verify account exists
-        // window.location.pathname = '/';
 
         axios.post("/api/authentication/login",  {username: userName, password: password})
             .then(res => {

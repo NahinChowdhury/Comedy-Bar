@@ -7,16 +7,23 @@ import { StatusCodes as STATUS}  from "http-status-codes";
 
 @Controller("")
 export class UserController {
+
     @Post("login")
     public async login(req: Request, res: Response){
         const {username, password} = req.body;
 
         let result = {userExists: false};
+
+        if(req.session?.username === username){
+            return res.status(STATUS.OK).json(result);
+        }
+        
         const userFound = await LoginModel.verifyUser(username, password);
 
 
         if(userFound?.PASSWORD === password) {
             result.userExists = true;
+            req.session.username = username;
             return res.status(STATUS.OK).json(result);
         }
 
@@ -49,6 +56,7 @@ export class UserController {
         }
 
         if( userCreated?.USERNAME == username && userCreated?.PASSWORD === password ){
+            req.session.username = username;
             return res.status(STATUS.OK).json({username: userCreated?.USERNAME , password: userCreated?.PASSWORD});
         }
 
