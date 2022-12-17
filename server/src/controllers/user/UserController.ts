@@ -39,12 +39,10 @@ export class UserApiController {
 
         const profileFound: ProfileInterface = await ProfileModel.getUserProfile(username) as ProfileInterface;
 
-        console.log('profileFound')
-        console.log(profileFound)
         if(profileFound === null) {
             return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
                 message: "Profile not found. Please log in again.",
-                code: "UC001"
+                code: "UC002"
             });
 
         }

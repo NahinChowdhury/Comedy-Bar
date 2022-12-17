@@ -77,4 +77,19 @@ export class HelpController {
         });
 
     }
+
+    @Get("logout")
+    public async logout(req: Request, res: Response){
+
+        try{
+            delete req.session.username;
+            return res.status(STATUS.OK).json("User has been logged out");
+        }catch{
+            return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
+                message: "Could not logout. Please refresh the page and try again.",
+                code: "HC001"
+            })
+        }
+
+    }
 }
