@@ -25,7 +25,7 @@ export const Signup:FunctionComponent = () => {
         // make a backend call to create the account.
         // if successful, then redirect to login page to log in
 
-        axios.post("/api/authentication/signup",  {username: userName, password: password})
+        axios.post("/api/help/signup",  {username: userName, password: password})
             .then(res => {
                 console.log(res.data)
                 window.location.pathname = '/';
