@@ -19,7 +19,6 @@ export const Profile:FunctionComponent = () => {
             setUsername(username);
             setFirstname(firstname);
             setLastname(lastname);
-            // window.location.pathname = '/';
         })
         .catch(e => {
             const error = e.response.data;
@@ -27,7 +26,6 @@ export const Profile:FunctionComponent = () => {
             switch(e.response.status){
                 case 401:
                     console.log("error 401")
-                    window.location.pathname = '/login';
                     break;
                 default:
                     alert(`${error.message}. CODE: ${error.code}`);
