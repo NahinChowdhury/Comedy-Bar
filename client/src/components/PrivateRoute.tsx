@@ -5,7 +5,7 @@ import axios from 'axios';
 
 export const PrivateRoute= () => {
 
-    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
+    const [isLoggedIn, setIsLoggedIn] = useState<boolean|null>(null);
 
     useEffect(() => {
         axios.get("/api/help/isLoggedIn")
@@ -18,7 +18,9 @@ export const PrivateRoute= () => {
     },[]);
 
     const renderComponent = () => {
-        if(isLoggedIn){
+        if(isLoggedIn === null){
+            return <>Loading...</>
+        }else if(isLoggedIn){
             return <Outlet />;
         }else{
             return <Navigate to="/NotFound" />;
