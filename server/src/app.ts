@@ -5,19 +5,21 @@ import { ApiController } from "./controllers/ApiController";
 import * as bodyParser from "body-parser";
 import session from "express-session";
 import path from "path";
-import dotenv from "dotenv";
 import cookieParser  from "cookie-parser";
 
 export class App extends Server {
   constructor() {
     super();
     // setting up session
-    this.app.use( session({ 
-      secret: 'secret',
-      resave: false,
-      saveUninitialized: false,
-      cookie: {maxAge: 60 * 1000 * 300}
-    }));
+    this.app.use( 
+      session({
+        secret: 'secret',
+        resave: true,
+        saveUninitialized: true,
+        cookie: {maxAge: 60 * 1000 * 300},
+        rolling: true // reset exipration date with every request
+      })
+    );
     this.applyMiddleWares();
     this.boostrap();
     this.setupControllers();
