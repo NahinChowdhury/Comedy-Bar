@@ -1,2 +1,3 @@
 export * from "./tweetCentral/TweetCentralController";
-export * from "./authentication/AuthenticationController";
+export * from "./user/UserController";
+export * from "./HelpController";
