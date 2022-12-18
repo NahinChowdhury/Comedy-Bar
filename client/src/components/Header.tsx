@@ -31,10 +31,15 @@ export const Header:FunctionComponent = () => {
     
     return ( 
         <>
+            <div style={{display:"flex", flexDirection:"row", justifyContent: "space-around"}}>
+
         <div>Header</div>
         { isLoggedIn ? 
-            <>{"YOU ARE LOGGED IN"} <button onClick={logOutClicked}>Log Out</button></> 
-            : <>{"YOU ARE LOGGED OUT"} <Link to="/login">Go to Log In</Link></>}<br/><br/>
+            <div>{"YOU ARE LOGGED IN"} <button onClick={logOutClicked}>Log Out</button></div> 
+            : <div>{"YOU ARE LOGGED OUT"} <Link to="/login">Go to Log In</Link></div>
+        }
+        </div>
+        <hr/>
         </>
     )
 }

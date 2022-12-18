@@ -5,12 +5,15 @@ import { Link } from "react-router-dom";
 export const Footer:FunctionComponent = () => {
     return ( 
         <>
-            <div>Footer</div><br/><br/>
-            <Link to="/login">Go to Log In</Link><br/>
-            <Link to="/signup">Go to Sign up</Link><br/>
-            <Link to="/profile">Go to Profile</Link><br/>
-            <Link to="/">Go to Main Page</Link><br/>
-            <Link to="/hello">Go to Hello</Link><br/>
+            <br/>
+            <hr/>
+            <div style={{display:"flex", flexDirection:"row", justifyContent: "space-around", marginTop:"auto"}}>
+                <Link to="/profile">Profile</Link>
+                <Link to="/login">Log In</Link>
+                <Link to="/signup">Sign up</Link>
+                <Link to="/">Main Page</Link>
+                <Link to="/hello">Hello</Link>
+            </div>
         </>
     )
 }
