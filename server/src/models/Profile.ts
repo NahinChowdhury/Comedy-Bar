@@ -38,4 +38,27 @@ export class ProfileModel implements ProfileInterface {
         })
     }
 
+    static updateUserProfile(username:string, firstname:string, lastname:string): Promise<ProfileInterface | null> {
+        
+        const query = `UPDATE public."Profile" p
+                        SET "FIRSTNAME" = '${firstname}', "LASTNAME" = '${lastname}'
+                        WHERE "USERNAME" = '${username}'
+                        RETURNING *;`
+
+        return new Promise((resolve, reject) => {
+            client.query(query)
+                .then(res => {
+                    const data = res.rows;
+                    console.log("profile update data")
+                    console.log(data)
+                    if(data.length > 0){
+                        resolve(new ProfileModel(data[0]));
+                    }else{
+                        resolve(null);
+                    }
+                })
+                .catch(err => reject(err));
+        })
+    }
+
 }
