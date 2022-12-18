@@ -6,14 +6,15 @@
 // https://www.youtube.com/watch?v=7D0x79lLevs&ab_channel=WyattFleming
 
 import { Client } from 'pg';
+import 'dotenv/config';
 
 
 export const client = new Client({
     host: "localhost",
-    port: 5432,
+    port: Number(process.env.DB_PORT),
     user: "postgres",
-    password: "password",
-    database: "nahintest",
+    database: process.env.DB_NAME,
+    password: process.env.DB_PASSWORD,
 });
 
 

@@ -6,6 +6,7 @@ import * as bodyParser from "body-parser";
 import session from "express-session";
 import path from "path";
 import cookieParser  from "cookie-parser";
+import 'dotenv/config';
 
 export class App extends Server {
   constructor() {
@@ -13,7 +14,7 @@ export class App extends Server {
     // setting up session
     this.app.use( 
       session({
-        secret: 'secret',
+        secret: process.env.EXPRESS_SERCET,
         resave: true,
         saveUninitialized: true,
         cookie: {maxAge: 60 * 1000 * 300},
