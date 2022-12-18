@@ -5,9 +5,12 @@ import { Link } from "react-router-dom";
 
 export const Profile:FunctionComponent = () => {
 
+    interface ProfileInterface {
+        firstname: string;
+        lastname: string;
+    }
     const [username, setUsername] = useState<string>("");
-    const [firstname, setFirstname] = useState<string>("");
-    const [lastname, setLastname] = useState<string>("");
+    const [formData, setFormData] = useState<ProfileInterface>({firstname:"", lastname:""});
 
 
 
@@ -17,8 +20,13 @@ export const Profile:FunctionComponent = () => {
             const {username, firstname, lastname} = res.data;
 
             setUsername(username);
-            setFirstname(firstname);
-            setLastname(lastname);
+            setFormData(prevFormData => {
+                return {
+                    ...prevFormData,
+                    firstname: firstname,
+                    lastname: lastname,
+                }
+            });
         })
         .catch(e => {
             const error = e.response.data;
@@ -35,12 +43,67 @@ export const Profile:FunctionComponent = () => {
         })
     },[])
 
+    const submitData = () => {
+
+        axios.post("/api/user/profile", formData)
+            .then(res => {
+                const {firstname, lastname} = res.data;
+
+                setFormData(prevFormData => {
+                    return {
+                        ...prevFormData,
+                        firstname: firstname,
+                        lastname: lastname,
+                    }
+                });
+
+                alert("Success");
+            })
+            .catch(err => {
+                const error = err.response;
+                console.log(error.data);
+            })
+    }
     return ( 
-        <div className="signup">
+        <div className="profile">
             
-            Hi {username}, Your first name is {`[${firstname}]`} and last name is {`[${lastname}]`}
-            <div>Have an account? Log In!</div>
-            <Link to="/login">Go to Log In</Link>
+            Hi Username: [{username}] <br/><br/>
+
+            <div>
+                {"Firstname:  "}
+                <input 
+                    type="text" 
+                    name="firstname" 
+                    value={formData.firstname} 
+                    onChange={e => {
+                        setFormData(prevFormData => {
+                            return {
+                                ...prevFormData,
+                                firstname: e.target.value
+                            }
+                        }
+                    )}
+                }/>
+            </div>
+            <div>
+                {"Lastname:  "}
+                <input 
+                    type="text" 
+                    name="lastname" 
+                    value={formData.lastname} 
+                    onChange={e => {
+                        setFormData(prevFormData => {
+                            return {
+                                ...prevFormData,
+                                lastname: e.target.value
+                            }
+                        }
+                    )}
+                }/>
+            </div>
+            <br/>
+            <button onClick={submitData}>Submit</button>
+
         </div>
         
     )
