@@ -5,6 +5,13 @@ import { ProfileModel } from "../../models/Profile";
 
 // import * as controllers from './Index';
 
+
+interface ProfileInterface {
+    USERNAME?: string;
+    FIRSTNAME?: string;
+    LASTNAME?: string;
+}
+
 // const ctrlList = [];
 
 // for (const c in controllers) {
@@ -19,16 +26,10 @@ import { ProfileModel } from "../../models/Profile";
 // @ChildControllers(ctrlList)
 export class UserApiController {
 
-
+    
     @Get("profile")
     public async getUserProfile(req: Request, res: Response): Promise<Response> {
         console.log('inside profile controller')
-
-        interface ProfileInterface {
-            USERNAME?: string;
-            FIRSTNAME?: string;
-            LASTNAME?: string;
-        }
 
         const username = req.session?.username;
 
@@ -51,6 +52,42 @@ export class UserApiController {
             username: profileFound.USERNAME,
             firstname: profileFound.FIRSTNAME,
             lastname: profileFound.LASTNAME,
+        }
+
+        return res.status(STATUS.OK).json(profile);
+    }
+
+    @Post("profile")
+    public async updateUserProfile(req: Request, res: Response): Promise<Response> {
+        console.log('inside profile controller')
+
+        const username = req.session?.username;
+        const {firstname, lastname} = req.body;
+
+
+        console.log('firstname, lastname')
+        console.log(firstname, lastname)
+
+
+        if(!username) return res.status(STATUS.UNAUTHORIZED).json({
+            message: "Profile not found. Please log in again.",
+            code: "UC003"
+        });
+
+        const profileUpdated: ProfileInterface = await ProfileModel.updateUserProfile(username, firstname, lastname) as ProfileInterface;
+
+        if(profileUpdated === null) {
+            return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
+                message: "Profile could not be updated. Please log in again.",
+                code: "UC004"
+            });
+
+        }
+
+        const profile = {
+            username: profileUpdated.USERNAME,
+            firstname: profileUpdated.FIRSTNAME,
+            lastname: profileUpdated.LASTNAME,
         }
 
         return res.status(STATUS.OK).json(profile);
