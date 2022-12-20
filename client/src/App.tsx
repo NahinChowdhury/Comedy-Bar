@@ -1,12 +1,12 @@
 import { Route, Routes as Switch, BrowserRouter as Router } from "react-router-dom";
 import { PrivateRoute } from './components/PrivateRoute';
 import { Header, Footer } from './components/Index';
-import { Main } from './main/Main';
 import { Login } from './main/Login';
 import { Signup } from './main/Signup';
-import './App.css';
 import { Profile } from "./main/Profile";
 import { NotFound } from "./others/NotFound";
+import { Posts } from "./main/Posts";
+import './App.css';
 
 function App() {
   return (
@@ -16,7 +16,6 @@ function App() {
 		<Header />
 		
 			<Switch>
-
 				<Route path="/" element={ <PrivateRoute />  }>
 					<Route path="/" element={<Profile />}/>
 				</Route>
@@ -25,6 +24,9 @@ function App() {
 				</Route>
 				<Route path="/profile" element={ <PrivateRoute />  }>
 					<Route path="/profile" element={ <Profile /> } />
+				</Route>
+				<Route path="/posts" element={ <PrivateRoute />  }>
+					<Route path="/posts" element={ <Posts /> } />
 				</Route>
 
 				<Route path="/signup" element={ <Signup /> } />

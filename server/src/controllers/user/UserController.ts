@@ -1,6 +1,7 @@
 import { Controller, ClassOptions, ChildControllers, Get, Post } from "@overnightjs/core";
 import { Request, Response } from "express";
 import { StatusCodes as STATUS}  from "http-status-codes";
+import { PostModel } from "../../models/Post";
 import { ProfileModel } from "../../models/Profile";
 
 // import * as controllers from './Index';
@@ -10,6 +11,13 @@ interface ProfileInterface {
     USERNAME?: string;
     FIRSTNAME?: string;
     LASTNAME?: string;
+}
+
+interface PostInterface {
+    POST_ID?: string;
+    TITLE?: string;
+    DETAILS?: string;
+    UPDATED_AT?: string;
 }
 
 // const ctrlList = [];
@@ -91,5 +99,41 @@ export class UserApiController {
         }
 
         return res.status(STATUS.OK).json(profile);
+    }
+
+    @Get("posts")
+    public async getUserPosts(req: Request, res: Response): Promise<Response> {
+        console.log('inside post controller')
+
+        const username = req.session?.username;
+
+        if(!username) return res.status(STATUS.UNAUTHORIZED).json({
+            message: "User cannot be identified. Please log in again.",
+            code: "UC005"
+        });
+
+        const postsFound: PostInterface[] = await PostModel.getUserPost(username) as PostInterface[];
+
+        if(postsFound.length === 0) {
+            console.log("Sending no content")
+            return res.status(STATUS.NOT_FOUND).json({
+                message: "User has no posts.",
+                code: "UC006"
+            });
+        }
+
+        const userPosts = postsFound.map( post => {
+            return {
+                postId: post.POST_ID,
+                title: post.TITLE,
+                details: post.DETAILS,
+                updatedAt: post.UPDATED_AT
+            }
+        })
+
+        console.log('userPosts');
+        console.log(userPosts);
+
+        return res.status(STATUS.OK).json({userPosts: userPosts});
     }
 }

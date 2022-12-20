@@ -13,6 +13,7 @@ export const Footer:FunctionComponent = () => {
                 <Link to="/signup">Sign up</Link>
                 <Link to="/">Main Page</Link>
                 <Link to="/hello">Hello</Link>
+                <Link to="/posts">Posts</Link>
             </div>
         </>
     )
