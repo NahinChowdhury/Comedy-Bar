@@ -1,5 +1,5 @@
-import React, {Component, FunctionComponent, useEffect, useState} from "react";
-import { Route, Navigate, Outlet } from 'react-router-dom';
+import React, { useEffect, useState} from "react";
+import { Navigate, Outlet } from 'react-router-dom';
 import axios from 'axios';
 
 

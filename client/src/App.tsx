@@ -17,7 +17,7 @@ function App() {
 		
 			<Switch>
 				<Route path="/" element={ <PrivateRoute />  }>
-					<Route path="/" element={<Profile />}/>
+					<Route path="/" element={<Posts />}/>
 				</Route>
 				<Route path="/" element={ <PrivateRoute />  }>
 					<Route path="/hello" element={<>Hello this is hello page</>}/>

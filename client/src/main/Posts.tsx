@@ -1,5 +1,6 @@
-import axios, { CancelTokenSource } from "axios";
+import axios from "axios";
 import React, {FunctionComponent, useState, useEffect} from "react";
+import { CreateOrEditPost } from "../components/CreateOrEditPost";
 
 
 export const Posts:FunctionComponent = () => {
@@ -9,7 +10,8 @@ export const Posts:FunctionComponent = () => {
         postId: string;
         title: string;
         details: string;
-        updatedAt: Date;
+        updatedAt: string;
+        displayModal: boolean;
     }
 
     const [posts, setPosts] = useState<PostInterface[]>([]);
@@ -19,12 +21,7 @@ export const Posts:FunctionComponent = () => {
         .then(res => {
             const { userPosts } = res.data;
 
-            setPosts(userPosts.map( (post:PostInterface) => {
-                return {
-                    ...post,
-                    updatedAt: new Date(post.updatedAt)
-                }
-            }));
+            setPosts(userPosts);
             
         })
         .catch(e => {
@@ -44,32 +41,11 @@ export const Posts:FunctionComponent = () => {
         })
     },[])
 
-    // const submitData = () => {
-
-    //     axios.post("/api/user/profile", formData)
-    //         .then(res => {
-    //             const {firstname, lastname} = res.data;
-
-    //             setFormData(prevFormData => {
-    //                 return {
-    //                     ...prevFormData,
-    //                     firstname: firstname,
-    //                     lastname: lastname,
-    //                 }
-    //             });
-
-    //             alert("Success");
-    //         })
-    //         .catch(err => {
-    //             const error = err.response;
-    //             console.log(error.data);
-    //         })
-    // }
 
     return ( 
         <div className="posts">
             
-            Posts:
+            <h1>Posts:</h1>
             <br/>
             {posts.length > 0 && 
             posts.map(post => {
@@ -77,8 +53,26 @@ export const Posts:FunctionComponent = () => {
                     <div>PostID: {post.postId}</div>
                     <div>Title: {post.title}</div>
                     <div>Details: {post.details}</div>
-                    <div>Latest update date: {`${post.updatedAt.toLocaleString('default', { month: 'long' })} ${post.updatedAt.getDate()}, ${post.updatedAt.getFullYear()}`}</div>
-                    <br/>
+                    <div>Updated last: {post.updatedAt}</div>
+                    <button type="button" onClick={ () => {setPosts(prevPosts => {
+                        return prevPosts.map(currPost => {
+                            if(currPost.postId === post.postId){
+                                return{
+                                    ...currPost,
+                                    displayModal: !currPost.displayModal
+                                }
+                            }else{
+                                return currPost
+                            }
+                        })
+                    })}}>{post.displayModal ? "Hide" : "Edit" }</button>
+                    {post.displayModal && <CreateOrEditPost 
+                        postId={post.postId} 
+                        title={post.title}
+                        details={post.details}
+                        updatedAt={post.updatedAt}
+                    />}
+                    <br/><br/><br/>
                 </div>)
             })}
         </div>

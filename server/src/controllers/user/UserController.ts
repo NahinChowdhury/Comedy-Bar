@@ -1,4 +1,4 @@
-import { Controller, ClassOptions, ChildControllers, Get, Post } from "@overnightjs/core";
+import { Controller, ClassOptions, ChildControllers, Get, Post, Put } from "@overnightjs/core";
 import { Request, Response } from "express";
 import { StatusCodes as STATUS}  from "http-status-codes";
 import { PostModel } from "../../models/Post";
@@ -15,9 +15,11 @@ interface ProfileInterface {
 
 interface PostInterface {
     POST_ID?: string;
+    USERNAME?: string;
     TITLE?: string;
     DETAILS?: string;
-    UPDATED_AT?: string;
+    UPDATED_AT?: Date;
+    CREATED_AT?: Date;
 }
 
 // const ctrlList = [];
@@ -67,15 +69,9 @@ export class UserApiController {
 
     @Post("profile")
     public async updateUserProfile(req: Request, res: Response): Promise<Response> {
-        console.log('inside profile controller')
 
         const username = req.session?.username;
         const {firstname, lastname} = req.body;
-
-
-        console.log('firstname, lastname')
-        console.log(firstname, lastname)
-
 
         if(!username) return res.status(STATUS.UNAUTHORIZED).json({
             message: "Profile not found. Please log in again.",
@@ -103,7 +99,6 @@ export class UserApiController {
 
     @Get("posts")
     public async getUserPosts(req: Request, res: Response): Promise<Response> {
-        console.log('inside post controller')
 
         const username = req.session?.username;
 
@@ -115,7 +110,6 @@ export class UserApiController {
         const postsFound: PostInterface[] = await PostModel.getUserPost(username) as PostInterface[];
 
         if(postsFound.length === 0) {
-            console.log("Sending no content")
             return res.status(STATUS.NOT_FOUND).json({
                 message: "User has no posts.",
                 code: "UC006"
@@ -123,17 +117,46 @@ export class UserApiController {
         }
 
         const userPosts = postsFound.map( post => {
+
             return {
                 postId: post.POST_ID,
                 title: post.TITLE,
                 details: post.DETAILS,
-                updatedAt: post.UPDATED_AT
+                updatedAt: new Date(post.UPDATED_AT).toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: 'numeric',
+                    second: 'numeric',
+                    hour12: true,
+                    })  // setting time to AM/PM
             }
         })
 
-        console.log('userPosts');
-        console.log(userPosts);
 
         return res.status(STATUS.OK).json({userPosts: userPosts});
+    }
+
+    @Put("posts/:id")
+    public async updateUserPost(req: Request, res: Response): Promise<Response> {
+
+        const username = req.session?.username;
+        const {id} = req.params;
+        const {title, details} = req.body;
+
+        if(!username) return res.status(STATUS.UNAUTHORIZED).json({
+            message: "User cannot be identified. Please log in again.",
+            code: "UC007"
+        });
+
+        const postCreated: PostInterface = await PostModel.updateUserPost(username, id, title, details) as PostInterface;
+
+        if(postCreated === null) {
+            return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
+                message: "Post could not be updated. Please try again.",
+                code: "UC008"
+            });
+
+        }
+
+        return res.status(STATUS.OK).json({message: "Post has been created."});
     }
 }
