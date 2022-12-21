@@ -8,7 +8,7 @@ interface PostInterface {
     updatedAt: string;
 }
 
-export const CreateOrEditPost:FunctionComponent<PostInterface> = ({postId, title, details, updatedAt}) => {
+export const CreateOrEditPost:FunctionComponent<any> = ({postId="", title="", details="", updatedAt="", editMode}) => {
 
     const originalFormData: PostInterface = {
         postId: postId,
@@ -34,29 +34,57 @@ export const CreateOrEditPost:FunctionComponent<PostInterface> = ({postId, title
 
     const submitData = () => {
         
-        if(!hasChanges()){
+
+        if(!editMode){
+            if(formData.title === "" || formData.details === "" ){
+                alert("Please add a title or detail to create post");
+                return;
+            }
+        }
+
+        if(editMode && !hasChanges()){
             alert("Need to make a change to update the post.");
             return;
         }
 
-        // change to put and send req to backend /posts
-        axios.put(`/api/user/posts/${formData.postId}`, formData)
-            .then(res => {
-                // reload to see the updated post
-                window.location.reload();
-            })
-            .catch(e => {
-                const error = e.response.data;
-                console.log(e);
-                console.log(error)
-                switch(e.response.status){
-                    case 401:
-                        console.log("error 401")
-                        break;
-                    default:
-                        alert(`${error.message}. CODE: ${error.code}`);
-                }
-            })
+        if(editMode){
+            // change to put and send req to backend /posts
+            axios.put(`/api/user/posts/${formData.postId}`, formData)
+                .then(res => {
+                    // reload to see the updated post
+                    window.location.reload();
+                })
+                .catch(e => {
+                    const error = e.response.data;
+                    console.log(e);
+                    console.log(error)
+                    switch(e.response.status){
+                        case 401:
+                            console.log("error 401")
+                            break;
+                        default:
+                            alert(`${error.message}. CODE: ${error.code}`);
+                    }
+                })
+        }else{
+            axios.post(`/api/user/posts`, formData)
+                .then(res => {
+                    // reload to see the created post
+                    window.location.reload();
+                })
+                .catch(e => {
+                    const error = e.response.data;
+                    console.log(e);
+                    console.log(error)
+                    switch(e.response.status){
+                        case 401:
+                            console.log("error 401")
+                            break;
+                        default:
+                            alert(`${error.message}. CODE: ${error.code}`);
+                    }
+                })
+        }
     }
     
     return ( 
