@@ -35,8 +35,8 @@ export class ProfileController {
 
         const profile = {
             username: profileFound.USERNAME,
-            firstname: profileFound.FIRSTNAME,
-            lastname: profileFound.LASTNAME,
+            firstname: profileFound.FIRSTNAME || "",
+            lastname: profileFound.LASTNAME || "",
         }
 
         return res.status(STATUS.OK).json(profile);
