@@ -80,4 +80,50 @@ export class PostModel implements PostInterface {
         })
     }
 
+    static createUserPost(username: string, title: string, details: string): Promise<PostInterface | null> {
+
+        const query = `INSERT INTO public."Posts" ("USERNAME" , "TITLE", "DETAILS") VALUES ($1, $2, $3) returning *;`
+        const params = [username, title, details,];
+
+        return new Promise((resolve, reject) => {
+            client.query(query, params)
+                .then(res => {
+                    const data = res.rows;
+                    console.log("data")
+                    console.log(data)
+                    
+                    if(data.length > 0){
+                        resolve(new PostModel(data[0]));
+                    }else{
+                        resolve(null);
+                    }
+                    
+                })
+                .catch(err => reject(err));
+        })
+    }
+
+    static deleteUserPost(username: string, id: string): Promise<PostInterface | null> {
+
+        const query = `DELETE FROM public."Posts" WHERE "USERNAME" = $1 AND "POST_ID" = $2 returning *;`
+        const params = [username, id];
+
+        return new Promise((resolve, reject) => {
+            client.query(query, params)
+                .then(res => {
+                    const data = res.rows;
+                    console.log("data")
+                    console.log(data)
+                    
+                    if(data.length > 0){
+                        resolve(new PostModel(data[0]));
+                    }else{
+                        resolve(null);
+                    }
+                    
+                })
+                .catch(err => reject(err));
+        })
+    }
+
 }
