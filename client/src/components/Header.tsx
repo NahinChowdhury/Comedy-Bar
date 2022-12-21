@@ -2,12 +2,21 @@ import axios from "axios";
 import React, {FunctionComponent, useEffect, useState} from "react";
 import { Link } from "react-router-dom";
 
+
+interface ProfileInterface {
+    firstname: string;
+    lastname: string;
+}
+
 export const Header:FunctionComponent = () => {
+    const [profile, setProfile] = useState<ProfileInterface>({firstname: "", lastname: ""}) 
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
 
     useEffect(() => {
         axios.get("/api/user/profile")
         .then(res => {
+            const {firstname, lastname} = res.data;
+            setProfile({firstname: firstname, lastname: lastname});
             setIsLoggedIn(true);
     
         })
@@ -33,13 +42,13 @@ export const Header:FunctionComponent = () => {
         <>
             <div style={{display:"flex", flexDirection:"row", justifyContent: "space-around"}}>
 
-        <div>Header</div>
-        { isLoggedIn ? 
-            <div>{"YOU ARE LOGGED IN"} <button onClick={logOutClicked}>Log Out</button></div> 
-            : <div>{"YOU ARE LOGGED OUT"} <Link to="/login">Go to Log In</Link></div>
-        }
-        </div>
-        <hr/>
+            <div>Header</div>
+            { isLoggedIn ? 
+                <div>{`Hello ${profile.firstname} ${profile.lastname}  `} <button onClick={logOutClicked}>Log Out</button></div> 
+                : <div><button><Link to="/login">Log In</Link></button></div>
+            }
+            </div>
+            <hr/>
         </>
     )
 }

@@ -1,13 +1,13 @@
 import axios from "axios";
 import React, {FunctionComponent, useState, useEffect} from "react";
 
+interface ProfileInterface {
+    firstname: string;
+    lastname: string;
+}
 
 export const Profile:FunctionComponent = () => {
 
-    interface ProfileInterface {
-        firstname: string;
-        lastname: string;
-    }
     const [username, setUsername] = useState<string>("");
     const [formData, setFormData] = useState<ProfileInterface>({firstname:"", lastname:""});
 
