@@ -11,16 +11,17 @@ export const Posts:FunctionComponent = () => {
         title: string;
         details: string;
         updatedAt: string;
-        displayModal: boolean;
+        displayEditModal: boolean;
     }
 
+    
     const [posts, setPosts] = useState<PostInterface[]>([]);
+    const [displayCreateModal, setDisplayCreateModal] = useState<boolean>(false);
 
     useEffect(() => { 
         axios.get('/api/user/posts')
         .then(res => {
             const { userPosts } = res.data;
-
             setPosts(userPosts);
             
         })
@@ -36,17 +37,44 @@ export const Posts:FunctionComponent = () => {
                 default:
                     alert(`${error.message}. CODE: ${error.code}`);
             }
-
-
         })
     },[])
 
+    const deletePost = (postId: string) => {
+        axios.delete(`/api/user/posts/${postId}`)
+        .then(res => {
+            // reload to see the deleted post
+            window.location.reload();
+        })
+        .catch(e => {
+
+            const error = e.response.data;
+            console.log(e);
+            console.log(error)
+            switch(e.response.status){
+                case 401:
+                    console.log("error 401")
+                    break;
+                default:
+                    alert(`${error.message}. CODE: ${error.code}`);
+            }
+        })
+    }
 
     return ( 
         <div className="posts">
             
             <h1>Posts:</h1>
-            <br/>
+            <button type="button" onClick={ () => {
+                setDisplayCreateModal(prevDisplayCreateModal => !prevDisplayCreateModal);
+            }}>
+                {displayCreateModal ? "Hide" : "Create" }
+            </button>
+            {displayCreateModal && <CreateOrEditPost 
+                editMode={false}
+            />}
+            <hr></hr>
+            <br/><br/><br/>
             {posts.length > 0 && 
             posts.map(post => {
                 return (<div key={post.postId}>
@@ -59,19 +87,26 @@ export const Posts:FunctionComponent = () => {
                             if(currPost.postId === post.postId){
                                 return{
                                     ...currPost,
-                                    displayModal: !currPost.displayModal
+                                    displayEditModal: !currPost.displayEditModal
                                 }
                             }else{
                                 return currPost
                             }
                         })
-                    })}}>{post.displayModal ? "Hide" : "Edit" }</button>
-                    {post.displayModal && <CreateOrEditPost 
+                    })}}>
+                        {post.displayEditModal ? "Hide" : "Edit" }
+                    </button>
+                    <button type="button" onClick={() => deletePost(post.postId)}>
+                        Delete
+                    </button>
+                    {post.displayEditModal && <CreateOrEditPost 
                         postId={post.postId} 
                         title={post.title}
                         details={post.details}
                         updatedAt={post.updatedAt}
+                        editMode={true}
                     />}
+                    <hr></hr>
                     <br/><br/><br/>
                 </div>)
             })}
