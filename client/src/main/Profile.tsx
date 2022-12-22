@@ -57,6 +57,7 @@ export const Profile:FunctionComponent = () => {
                 });
 
                 alert("Success");
+                window.location.reload();
             })
             .catch(err => {
                 const error = err.response;
