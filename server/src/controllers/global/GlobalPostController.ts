@@ -18,7 +18,7 @@ interface PostInterface {
 interface CommentInterface {
     COMMENT_ID?: string;
     POST_ID?: string;
-    USERNAME?: string;
+    COMMENTED_BY?: string;
     DETAILS?: string;
     CREATED_AT?: Date;
     UPDATED_AT?: Date;
@@ -70,19 +70,18 @@ export class GlobalPostController {
             });
         }
 
-        const comments = commentsFound.map( comment => {
-
+        const postComments = commentsFound.map( comment => {
             return {
                 commentId: comment.COMMENT_ID,
                 postId: comment.POST_ID,
-                username: comment.USERNAME,
+                commentedBy: comment.COMMENTED_BY,
                 details: comment.DETAILS,
                 updatedAt: convertToAMPM(new Date(comment.UPDATED_AT))  // setting time to AM/PM
             }
         })
 
 
-        return res.status(STATUS.OK).json({comments: comments});
+        return res.status(STATUS.OK).json({postComments: postComments});
     }
 
 

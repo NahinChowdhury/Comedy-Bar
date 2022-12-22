@@ -4,7 +4,7 @@ import { client } from './index';
 interface CommentInterface {
     COMMENT_ID?: string;
     POST_ID?: string;
-    USERNAME?: string;
+    COMMENTED_BY?: string;
     DETAILS?: string;
     CREATED_AT?: Date;
     UPDATED_AT?: Date;
@@ -13,7 +13,7 @@ interface CommentInterface {
 export class CommentModel implements CommentInterface {
     COMMENT_ID?: string;
     POST_ID?: string;
-    USERNAME?: string;
+    COMMENTED_BY?: string;
     DETAILS?: string;
     CREATED_AT?: Date;
     UPDATED_AT?: Date;
@@ -47,13 +47,13 @@ export class CommentModel implements CommentInterface {
         })
     }
 
-    static updatePostComment(commentId: string, postId: string, username: string, details: string): Promise<CommentInterface | null> {
+    static updatePostComment(commentId: string, postId: string, commentedBy: string, details: string): Promise<CommentInterface | null> {
 
         const query = `UPDATE public."Comments" c
                         SET "DETAILS" = $1, "UPDATED_AT" = now()
-                        WHERE "COMMENT_ID" = $2 AND "POST_ID" = $3 AND "USERNAME" = $4
+                        WHERE "COMMENT_ID" = $2 AND "POST_ID" = $3 AND "COMMENTED_BY" = $4
                         RETURNING *;`
-        const params = [details, commentId, postId, username];
+        const params = [details, commentId, postId, commentedBy];
 
         return new Promise((resolve, reject) => {
             client.query(query, params)
@@ -73,10 +73,10 @@ export class CommentModel implements CommentInterface {
         })
     }
 
-    static createPostComment(postId: string, username: string, details: string): Promise<CommentInterface | null> {
+    static createPostComment(postId: string, commentedBy: string, details: string): Promise<CommentInterface | null> {
 
-        const query = `INSERT INTO public."Comments" ("POST_ID", "USERNAME" , "DETAILS") VALUES ($1, $2, $3) returning *;`
-        const params = [postId, username, details,];
+        const query = `INSERT INTO public."Comments" ("POST_ID", "COMMENTED_BY" , "DETAILS") VALUES ($1, $2, $3) returning *;`
+        const params = [postId, commentedBy, details,];
 
         return new Promise((resolve, reject) => {
             client.query(query, params)
@@ -96,10 +96,10 @@ export class CommentModel implements CommentInterface {
         })
     }
 
-    static deletePostComment(commentId: string, postId: string, username: string): Promise<CommentInterface | null> {
+    static deletePostComment(commentId: string, postId: string, commentedBy: string): Promise<CommentInterface | null> {
 
-        const query = `DELETE FROM public."Posts" WHERE "COMMENT_ID" = $1 AND "POST_ID" = $2 AND "USERNAME" = $3 returning *;`
-        const params = [commentId, username, postId];
+        const query = `DELETE FROM public."Posts" WHERE "COMMENT_ID" = $1 AND "POST_ID" = $2 AND "COMMENTED_BY" = $3 returning *;`
+        const params = [commentId, commentedBy, postId];
 
         return new Promise((resolve, reject) => {
             client.query(query, params)
