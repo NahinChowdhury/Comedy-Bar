@@ -19,10 +19,11 @@ export class LoginModel implements UserInterface {
         console.log(username)
         console.log(password)
 
-        const query = `Select u."USERNAME", u."PASSWORD" FROM public."User" u WHERE u."USERNAME" = '${username}' AND u."PASSWORD" = '${password}';`
+        const query = `Select u."USERNAME", u."PASSWORD" FROM public."User" u WHERE u."USERNAME" = $1 AND u."PASSWORD" = $2;`;
+        const params = [username, password];
 
         return new Promise((resolve, reject) => {
-            client.query(query)
+            client.query(query, params)
                 .then(res => {
                     const data = res.rows;
                     console.log("data")
@@ -40,10 +41,11 @@ export class LoginModel implements UserInterface {
 
     static createNewUser(username: string, password: string): Promise<LoginModel | null>{
         
-        const query = `INSERT INTO public."User" ("USERNAME" , "PASSWORD") VALUES ('${username}', '${password}') RETURNING *;`;
+        const query = `INSERT INTO public."User" ("USERNAME" , "PASSWORD") VALUES ($1, $2) RETURNING *;`;
+        const params = [username, password];
 
         return new Promise((resolve, reject) => {
-            client.query(query)
+            client.query(query, params)
                 .then(res => {
                     const data = res.rows;
                     console.log("data")
@@ -60,10 +62,11 @@ export class LoginModel implements UserInterface {
 
     static findUser(username: string): Promise<LoginModel | null> {
 
-        const query = `Select * FROM public."User" u WHERE u."USERNAME" = '${username}';`
+        const query = `Select * FROM public."User" u WHERE u."USERNAME" = $1;`
+        const params = [username];
 
         return new Promise((resolve, reject) => {
-            client.query(query)
+            client.query(query, params)
                 .then(res => {
                     const data = res.rows;
                     console.log("data")

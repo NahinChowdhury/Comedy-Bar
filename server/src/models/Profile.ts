@@ -41,12 +41,13 @@ export class ProfileModel implements ProfileInterface {
     static updateUserProfile(username:string, firstname:string, lastname:string): Promise<ProfileInterface | null> {
         
         const query = `UPDATE public."Profile" p
-                        SET "FIRSTNAME" = '${firstname}', "LASTNAME" = '${lastname}'
-                        WHERE "USERNAME" = '${username}'
+                        SET "FIRSTNAME" = $1, "LASTNAME" = $2
+                        WHERE "USERNAME" = $3
                         RETURNING *;`
+        const params = [firstname, lastname, username];
 
         return new Promise((resolve, reject) => {
-            client.query(query)
+            client.query(query, params)
                 .then(res => {
                     const data = res.rows;
                     console.log("profile update data")

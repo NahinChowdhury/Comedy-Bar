@@ -1,14 +1,5 @@
 import { client } from './index';
 
-interface ProfileInterface {
-    POST_ID?: string;
-    USERNAME?: string;
-    TITLE?: string;
-    DETAILS?: string;
-    UPDATED_AT?: Date;
-    CREATED_AT?: string;
-}
-
 interface PostInterface {
     POST_ID?: string;
     USERNAME?: string;
