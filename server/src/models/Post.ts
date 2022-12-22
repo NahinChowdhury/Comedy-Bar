@@ -54,6 +54,30 @@ export class PostModel implements PostInterface {
         })
     }
     
+    static getGlobalPosts(username: string): Promise<PostInterface[] | null> {
+
+        const query = `Select * FROM public."Posts" u 
+                        WHERE u."USERNAME" != '${username}'
+                        ORDER BY u."UPDATED_AT" DESC;`
+
+        return new Promise((resolve, reject) => {
+            client.query(query)
+                .then(res => {
+                    const data = res.rows;
+                    console.log("data")
+                    console.log(data)
+                    
+                    resolve(
+                        data.map( d=> {
+                            return new PostModel(d);
+                        })
+                    );
+                    
+                })
+                .catch(err => reject(err));
+        })
+    }
+
     static updateUserPost(username: string, id: string, title: string, details: string): Promise<PostInterface | null> {
 
         const query = `UPDATE public."Posts" p
