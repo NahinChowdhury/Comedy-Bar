@@ -28,6 +28,7 @@ export const Header:FunctionComponent = () => {
     const logOutClicked = () => {
         axios.get("/api/help/logout")
         .then(res => {
+            window.localStorage.clear();
             setIsLoggedIn(false);
             window.location.pathname = "/login";
         })

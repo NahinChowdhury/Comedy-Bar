@@ -9,7 +9,9 @@ export const PrivateRoute= () => {
 
     useEffect(() => {
         axios.get("/api/help/isLoggedIn")
-            .then(response => {
+            .then(res => {
+                const { username } = res.data;
+                window.localStorage.setItem("user", username);
                 setIsLoggedIn(true);
             })
             .catch(error => {
