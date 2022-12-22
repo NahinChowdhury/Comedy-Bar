@@ -44,7 +44,7 @@ export const Profile:FunctionComponent = () => {
 
     const submitData = () => {
 
-        axios.post("/api/user/profile", formData)
+        axios.put("/api/user/profile", formData)
             .then(res => {
                 const {firstname, lastname} = res.data;
 

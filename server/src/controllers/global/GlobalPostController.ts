@@ -27,7 +27,7 @@ export class GlobalPostController {
         if(postsFound.length === 0) {
             return res.status(STATUS.NOT_FOUND).json({
                 message: "User has no posts.",
-                code: "UC006"
+                code: "GC001"
             });
         }
 

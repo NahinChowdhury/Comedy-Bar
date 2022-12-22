@@ -25,7 +25,7 @@ export class ProfileController {
         if(profileFound === null) {
             return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
                 message: "Profile not found. Please log in again.",
-                code: "UC002"
+                code: "UPRC001"
             });
 
         }
@@ -39,7 +39,7 @@ export class ProfileController {
         return res.status(STATUS.OK).json(profile);
     }
 
-    @Post("")
+    @Put("")
     @Middleware([isLoggedIn])
     public async updateUserProfile(req: Request, res: Response): Promise<Response> {
 
@@ -51,7 +51,7 @@ export class ProfileController {
         if(profileUpdated === null) {
             return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
                 message: "Profile could not be updated. Please log in again.",
-                code: "UC004"
+                code: "UPRC002"
             });
 
         }

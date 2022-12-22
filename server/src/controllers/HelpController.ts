@@ -40,7 +40,7 @@ export class HelpController {
 
         return res.status(STATUS.NOT_FOUND).json({
             message: "Could not verify user. Please try again",
-            code: 404
+            code: "HC001"
         })
     }
   
@@ -54,7 +54,7 @@ export class HelpController {
         if(userExists !== null) {
             return res.status(STATUS.BAD_REQUEST).json({
                 message: "A user with this username already exists. Please login",
-                code: 404
+                code: "HC002"
             });
         }
         const userCreated = await LoginModel.createNewUser(username, password);
@@ -62,7 +62,7 @@ export class HelpController {
         if(userCreated === null){
             return res.status(STATUS.BAD_REQUEST).json({
                 message: "Could not create user. Please try again",
-                code: 404
+                code: "HC003"
             });
         }
 
@@ -73,7 +73,7 @@ export class HelpController {
 
         return res.status(STATUS.CONFLICT).json({
             message: "A user was created but not with the credentials you requested. Please try to login before signing up again.",
-            code: 409
+            code: "HC004"
         });
 
     }
@@ -87,7 +87,7 @@ export class HelpController {
         }catch{
             return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
                 message: "Could not logout. Please refresh the page and try again.",
-                code: "HC001"
+                code: "HC005"
             })
         }
 

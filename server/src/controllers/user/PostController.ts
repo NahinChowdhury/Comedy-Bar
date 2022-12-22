@@ -27,7 +27,7 @@ export class PostController {
         if(postsFound.length === 0) {
             return res.status(STATUS.NOT_FOUND).json({
                 message: "User has no posts.",
-                code: "UC006"
+                code: "UPC001"
             });
         }
 
@@ -63,7 +63,7 @@ export class PostController {
         if(postCreated === null) {
             return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
                 message: "Post could not be updated. Please try again.",
-                code: "UC008"
+                code: "UPC002"
             });
 
         }
@@ -83,7 +83,7 @@ export class PostController {
         if(postCreated === null) {
             return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
                 message: "Post could not be created. Please try again.",
-                code: "UC010"
+                code: "UPC003"
             });
 
         }
@@ -103,7 +103,7 @@ export class PostController {
         if(postDeleted === null) {
             return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
                 message: "Post could not be deleted. Please try again.",
-                code: "UC012"
+                code: "UPC004"
             });
 
         }
