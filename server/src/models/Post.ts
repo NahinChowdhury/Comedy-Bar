@@ -55,9 +55,6 @@ export class PostModel implements PostInterface {
             client.query(query)
                 .then(res => {
                     const data = res.rows;
-                    console.log("data")
-                    console.log(data)
-                    
                     resolve(
                         data.map( d=> {
                             return new PostModel(d);

@@ -10,7 +10,7 @@ export class HelpController {
     public async isLoggedIn(req: Request, res: Response): Promise<Response> {
         
         if(req.session?.username){
-            return res.status(STATUS.OK).json(req.session?.username);
+            return res.status(STATUS.OK).json({username: req.session?.username});
         }
 
         return res.status(STATUS.INTERNAL_SERVER_ERROR).json(null);

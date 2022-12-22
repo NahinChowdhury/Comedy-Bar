@@ -84,5 +84,27 @@ export class GlobalPostController {
         return res.status(STATUS.OK).json({postComments: postComments});
     }
 
+    @Post(":postId/comments")
+    @Middleware([isLoggedIn])
+    public async createPostComment(req: Request, res: Response): Promise<Response> {
+        
+        console.log("GOT COMMENT")
+        const { postId } = req.params;
+        const username = req.session?.username;
+        const { details } = req.body;
+
+        const commentCreated: CommentInterface = await CommentModel.createPostComment(postId, username, details) as CommentInterface;
+
+        if(commentCreated === null) {
+            return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
+                message: "Comment could not be created. Please try again.",
+                code: "UPC003"
+            });
+
+        }
+
+        return res.status(STATUS.OK).json({message: "Comment has been created."});
+    }
+
 
 }
