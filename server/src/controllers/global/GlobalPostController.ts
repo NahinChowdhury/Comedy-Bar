@@ -22,6 +22,7 @@ interface CommentInterface {
     DETAILS?: string;
     CREATED_AT?: Date;
     UPDATED_AT?: Date;
+    PARENT_COMMENT_ID?: string;
 }
 @Controller("posts")
 export class GlobalPostController {
@@ -88,7 +89,6 @@ export class GlobalPostController {
     @Middleware([isLoggedIn])
     public async createPostComment(req: Request, res: Response): Promise<Response> {
         
-        console.log("GOT COMMENT")
         const { postId } = req.params;
         const username = req.session?.username;
         const { details } = req.body;
@@ -106,5 +106,44 @@ export class GlobalPostController {
         return res.status(STATUS.OK).json({message: "Comment has been created."});
     }
 
+    @Put(":postId/comments")
+    @Middleware([isLoggedIn])
+    public async updatePostComment(req: Request, res: Response): Promise<Response> {
+        
+        const { postId } = req.params;
+        const username = req.session?.username;
+        const { commentId, details } = req.body;
 
+        const commentUpdated: CommentInterface = await CommentModel.updatePostComment(commentId, postId, username, details) as CommentInterface;
+
+        if(commentUpdated === null) {
+            return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
+                message: "Comment could not be updated. Please try again.",
+                code: "UPC004"
+            });
+
+        }
+
+        return res.status(STATUS.OK).json({message: "Comment has been updated."});
+    }
+
+    @Delete(":postId/comments/:commentId")
+    @Middleware([isLoggedIn])
+    public async deleteUserPost(req: Request, res: Response): Promise<Response> {
+
+        const username = req.session?.username;
+        const { postId, commentId } = req.params;
+
+        const commentUpdated: CommentInterface = await CommentModel.deletePostComment(commentId, postId, username) as CommentInterface;
+
+        if(commentUpdated === null) {
+            return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
+                message: "Comment could not be deleted. Please try again.",
+                code: "UPC004"
+            });
+
+        }
+
+        return res.status(STATUS.OK).json({message: "Comment has been deleted."});
+    }
 }

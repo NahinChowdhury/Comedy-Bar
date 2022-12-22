@@ -1,8 +1,9 @@
 import axios from "axios";
 import React, {FunctionComponent, useEffect, useState} from "react";
-import { CreateComment } from "./CreateComment";
+import { CreateOrEditComment } from "./CreateOrEditComment";
 
 interface CommentInterface {
+    postId: string;
     commentId: string;
     commentedBy: string;
     details: string;
@@ -44,6 +45,27 @@ export const CommentSection:FunctionComponent<any> = ({postId="", showComments= 
         setFetchComments(false);
     },[fetchComments])
     
+    const deleteComment = (postId: string, commentId: string) => {
+        axios.delete(`/api/global/posts/${postId}/comments/${commentId}`)
+        .then(res => {
+            setFetchComments(true);
+        })
+        .catch(e => {
+
+            const error = e.response.data;
+            console.log(e);
+            console.log(error)
+            switch(e.response.status){
+                case 401:
+                    console.log("error 401")
+                    break;
+                default:
+                    alert(`${error.message}. CODE: ${error.code}`);
+            }
+        })
+    }
+
+
     return postId === "" ?
     (
     <>Unable to show comments for this post</>
@@ -59,10 +81,10 @@ export const CommentSection:FunctionComponent<any> = ({postId="", showComments= 
             }}>
                 {displayCreateModal ? "Hide" : "Create" }
             </button>
-            {displayCreateModal && <CreateComment 
+            {displayCreateModal && <CreateOrEditComment 
                 postId={postId}
-                editMode={false}
                 setFetchComments={setFetchComments}
+                editMode={false}
             />}
             <br/><br/><br/>
             {comments.length > 0 && 
@@ -90,11 +112,15 @@ export const CommentSection:FunctionComponent<any> = ({postId="", showComments= 
                         }}>
                             {comment.displayEditModal ? "Cancel" : "Edit" }
                         </button>
-                        {comment.displayEditModal && <CreateComment 
+                        <button type="button" onClick={() => deleteComment(comment.postId, comment.commentId)}>
+                            Delete
+                        </button>
+                        {comment.displayEditModal && <CreateOrEditComment 
                             postId={postId}
-                            details={comment.details} 
-                            editMode={true}
+                            commentId={comment.commentId}
+                            details={comment.details}
                             setFetchComments={setFetchComments}
+                            editMode={true}
                         />}
                     </>
                     }

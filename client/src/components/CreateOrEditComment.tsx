@@ -4,18 +4,21 @@ import React, {FunctionComponent, useState} from "react";
 interface CommentInterface {
     postId: string;
     details: string;
+    commentId: string;
 }
 
-export const CreateComment:FunctionComponent<any> = ({postId="", details="", setFetchComments, editMode}) => {
+export const CreateOrEditComment:FunctionComponent<any> = ({postId="", commentId="", details="", setFetchComments, editMode}) => {
 
     const emptyFormData: CommentInterface = {
         postId: postId,
-        details: details
+        details: details,
+        commentId: commentId,
     };
 
     const originalFormData: CommentInterface = {
         postId: postId,
-        details: ""
+        details: "",
+        commentId: "",
     };
     const [formData, setFormData] = useState<CommentInterface>(emptyFormData)
 
@@ -106,7 +109,7 @@ export const CreateComment:FunctionComponent<any> = ({postId="", details="", set
                 }/>
             </div>
             <br/>
-            <button onClick={submitData}>Send Comment</button>
+            <button onClick={submitData}>{editMode? "Edit":"Create"} Comment</button>
         </div>
         
     )
