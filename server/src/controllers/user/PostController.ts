@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Put, Delete, Middleware } from "@overnightjs/core";
 import { Request, Response } from "express";
 import { StatusCodes as STATUS}  from "http-status-codes";
+import { convertToAMPM } from "../../utils/helperFunctions";
 import { isLoggedIn } from "../../middlewares/LoggedIn";
 import { PostModel } from "../../models/Post";
 
@@ -22,7 +23,7 @@ export class PostController {
 
         const username = req.session?.username;
 
-        const postsFound: PostInterface[] = await PostModel.getGlobalPosts(username) as PostInterface[];
+        const postsFound: PostInterface[] = await PostModel.getUserPost(username) as PostInterface[];
 
         if(postsFound.length === 0) {
             return res.status(STATUS.NOT_FOUND).json({
@@ -37,12 +38,7 @@ export class PostController {
                 postId: post.POST_ID,
                 title: post.TITLE,
                 details: post.DETAILS,
-                updatedAt: new Date(post.UPDATED_AT).toLocaleTimeString('en-US', {
-                    hour: 'numeric',
-                    minute: 'numeric',
-                    second: 'numeric',
-                    hour12: true,
-                    })  // setting time to AM/PM
+                updatedAt: convertToAMPM(new Date(post.UPDATED_AT))  // setting time to AM/PM
             }
         })
 
