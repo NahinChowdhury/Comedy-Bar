@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Put, Delete } from "@overnightjs/core";
+import { Controller, Get, Post, Put, Delete, Middleware } from "@overnightjs/core";
 import { Request, Response } from "express";
 import { StatusCodes as STATUS}  from "http-status-codes";
+import { isLoggedIn } from "../../middlewares/LoggedIn";
 import { ProfileModel } from "../../models/Profile";
 
 interface ProfileInterface {
@@ -13,15 +14,11 @@ interface ProfileInterface {
 export class ProfileController {
     
     @Get("")
+    @Middleware([isLoggedIn])
     public async getUserProfile(req: Request, res: Response): Promise<Response> {
         console.log('inside profile controller')
 
         const username = req.session?.username;
-
-        if(!username) return res.status(STATUS.UNAUTHORIZED).json({
-            message: "Profile not found. Please log in again.",
-            code: "UC001"
-        });
 
         const profileFound: ProfileInterface = await ProfileModel.getUserProfile(username) as ProfileInterface;
 
@@ -43,15 +40,11 @@ export class ProfileController {
     }
 
     @Post("")
+    @Middleware([isLoggedIn])
     public async updateUserProfile(req: Request, res: Response): Promise<Response> {
 
         const username = req.session?.username;
         const {firstname, lastname} = req.body;
-
-        if(!username) return res.status(STATUS.UNAUTHORIZED).json({
-            message: "Profile not found. Please log in again.",
-            code: "UC003"
-        });
 
         const profileUpdated: ProfileInterface = await ProfileModel.updateUserProfile(username, firstname, lastname) as ProfileInterface;
 

@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Put, Delete } from "@overnightjs/core";
+import { Controller, Get, Post, Put, Delete, Middleware } from "@overnightjs/core";
 import { Request, Response } from "express";
 import { StatusCodes as STATUS}  from "http-status-codes";
+import { isLoggedIn } from "../../middlewares/LoggedIn";
 import { PostModel } from "../../models/Post";
 
 interface PostInterface {
@@ -16,16 +17,12 @@ interface PostInterface {
 export class PostController {
     
     @Get("")
+    @Middleware([isLoggedIn])
     public async getUserPosts(req: Request, res: Response): Promise<Response> {
 
         const username = req.session?.username;
 
-        if(!username) return res.status(STATUS.UNAUTHORIZED).json({
-            message: "User cannot be identified. Please log in again.",
-            code: "UC005"
-        });
-
-        const postsFound: PostInterface[] = await PostModel.getUserPost(username) as PostInterface[];
+        const postsFound: PostInterface[] = await PostModel.getGlobalPosts(username) as PostInterface[];
 
         if(postsFound.length === 0) {
             return res.status(STATUS.NOT_FOUND).json({
@@ -54,16 +51,12 @@ export class PostController {
     }
 
     @Put(":id")
+    @Middleware([isLoggedIn])
     public async updateUserPost(req: Request, res: Response): Promise<Response> {
 
         const username = req.session?.username;
         const {id} = req.params;
         const {title, details} = req.body;
-
-        if(!username) return res.status(STATUS.UNAUTHORIZED).json({
-            message: "User cannot be identified. Please log in again.",
-            code: "UC007"
-        });
 
         const postCreated: PostInterface = await PostModel.updateUserPost(username, id, title, details) as PostInterface;
 
@@ -79,15 +72,11 @@ export class PostController {
     }
     
     @Post("")
+    @Middleware([isLoggedIn])
     public async createUserPost(req: Request, res: Response): Promise<Response> {
 
         const username = req.session?.username;
         const {title, details} = req.body;
-
-        if(!username) return res.status(STATUS.UNAUTHORIZED).json({
-            message: "User cannot be identified. Please log in again.",
-            code: "UC009"
-        });
 
         const postCreated: PostInterface = await PostModel.createUserPost(username, title, details) as PostInterface;
 
@@ -103,15 +92,11 @@ export class PostController {
     }
 
     @Delete(":id")
+    @Middleware([isLoggedIn])
     public async deleteUserPost(req: Request, res: Response): Promise<Response> {
 
         const username = req.session?.username;
         const {id} = req.params;
-
-        if(!username) return res.status(STATUS.UNAUTHORIZED).json({
-            message: "User cannot be identified. Please log in again.",
-            code: "UC011"
-        });
 
         const postDeleted: PostInterface = await PostModel.deleteUserPost(username, id) as PostInterface;
 
