@@ -6,6 +6,7 @@ import { Signup } from './main/Signup';
 import { Profile } from "./main/Profile";
 import { NotFound } from "./others/NotFound";
 import { Posts } from "./main/Posts";
+import { NewsFeed } from "./main/NewsFeed";
 import './App.css';
 
 function App() {
@@ -17,7 +18,10 @@ function App() {
 		
 			<Switch>
 				<Route path="/" element={ <PrivateRoute />  }>
-					<Route path="/" element={<Posts />}/>
+					<Route path="/" element={<NewsFeed />}/>
+				</Route>
+				<Route path="/newsFeed" element={ <PrivateRoute />  }>
+					<Route path="/newsFeed" element={<NewsFeed />}/>
 				</Route>
 				<Route path="/" element={ <PrivateRoute />  }>
 					<Route path="/hello" element={<>Hello this is hello page</>}/>

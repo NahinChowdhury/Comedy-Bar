@@ -11,10 +11,12 @@ export const Footer:FunctionComponent = () => {
                 <Link to="/profile">Profile</Link>
                 <Link to="/login">Log In</Link>
                 <Link to="/signup">Sign up</Link>
-                <Link to="/">Main Page</Link>
+                <Link to="/newsFeed">News Feed</Link>
                 <Link to="/hello">Hello</Link>
                 <Link to="/posts">Posts</Link>
             </div>
+            <br/>
+            <br/>
         </>
     )
 }
