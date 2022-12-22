@@ -6,23 +6,42 @@ interface CommentInterface {
     details: string;
 }
 
-export const CreateComment:FunctionComponent<any> = ({postId="", setFetchComments}) => {
+export const CreateComment:FunctionComponent<any> = ({postId="", details="", setFetchComments, editMode}) => {
 
-    const emptyFormData = {
+    const emptyFormData: CommentInterface = {
+        postId: postId,
+        details: details
+    };
+
+    const originalFormData: CommentInterface = {
         postId: postId,
         details: ""
     };
-
     const [formData, setFormData] = useState<CommentInterface>(emptyFormData)
+
+    const hasChanges = () => {
+        const originalData = `${originalFormData.details}`;
+        const newData = `${formData.details}`;
+
+        return originalData !== newData;
+    }
 
     const submitData = () => {
         
-        if(formData.details === "" ){
-            alert("Please add a title or detail to create post");
+        if(!editMode){
+            if(formData.details === "" ){
+                alert("Please add a title or detail to create post");
+                return;
+            }
+        }
+
+        if(editMode && !hasChanges()){
+            alert("Need to make a change to update the comment.");
             return;
         }
 
-        axios.post(`/api/global/posts/${postId}/comments`, formData)
+        if(editMode){
+            axios.put(`/api/global/posts/${postId}/comments`, formData)
             .then(res => {
                 // set FetchComments to true so that parent fetches the new comments and updates the comments for
                 // this specific post
@@ -43,7 +62,29 @@ export const CreateComment:FunctionComponent<any> = ({postId="", setFetchComment
                         alert(`${error.message}. CODE: ${error.code}`);
                 }
             })
-        
+        }else{
+            axios.post(`/api/global/posts/${postId}/comments`, formData)
+                .then(res => {
+                    // set FetchComments to true so that parent fetches the new comments and updates the comments for
+                    // this specific post
+                    setFetchComments(true);
+                    
+                    // setting formdata to empty
+                    setFormData(emptyFormData);
+                })
+                .catch(e => {
+                    const error = e.response.data;
+                    console.log(e);
+                    console.log(error)
+                    switch(e.response.status){
+                        case 401:
+                            console.log("error 401")
+                            break;
+                        default:
+                            alert(`${error.message}. CODE: ${error.code}`);
+                    }
+                })
+        }
     }
     
     return ( 

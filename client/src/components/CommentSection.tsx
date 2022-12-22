@@ -7,6 +7,7 @@ interface CommentInterface {
     commentedBy: string;
     details: string;
     updatedAt: string;
+    displayEditModal: boolean;
 }
 
 export const CommentSection:FunctionComponent<any> = ({postId="", showComments= false}) => {
@@ -15,6 +16,7 @@ export const CommentSection:FunctionComponent<any> = ({postId="", showComments= 
     const [displayCreateModal, setDisplayCreateModal] = useState<boolean>(false);
     const [fetchComments, setFetchComments] = useState<boolean>(true);
 
+    const username = window.localStorage.getItem('user');
 
     useEffect(() => { 
 
@@ -59,6 +61,7 @@ export const CommentSection:FunctionComponent<any> = ({postId="", showComments= 
             </button>
             {displayCreateModal && <CreateComment 
                 postId={postId}
+                editMode={false}
                 setFetchComments={setFetchComments}
             />}
             <br/><br/><br/>
@@ -69,6 +72,32 @@ export const CommentSection:FunctionComponent<any> = ({postId="", showComments= 
                     <div>Details: {comment.details}</div>
                     <div>Commented By: {comment.commentedBy}</div>
                     <div>Updated last: {comment.updatedAt}</div>
+                    {comment.commentedBy === username &&
+                    <>
+                        <button type="button" onClick={ () => {
+                            setComments(prevComments => {
+                                return prevComments.map(currComment => {
+                                    if(currComment.commentId === comment.commentId) {
+                                        return{
+                                            ...currComment,
+                                            displayEditModal: !currComment.displayEditModal
+                                        }
+                                    }else{
+                                        return currComment
+                                    }
+                                })
+                            })
+                        }}>
+                            {comment.displayEditModal ? "Cancel" : "Edit" }
+                        </button>
+                        {comment.displayEditModal && <CreateComment 
+                            postId={postId}
+                            details={comment.details} 
+                            editMode={true}
+                            setFetchComments={setFetchComments}
+                        />}
+                    </>
+                    }
                     <hr></hr>
                     <br/><br/>
                 </div>)
