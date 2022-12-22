@@ -3,6 +3,7 @@ import React, {FunctionComponent, useEffect, useState} from "react";
 
 interface CommentInterface {
     commentId: string;
+    commentedBy: string;
     details: string;
     updatedAt: string;
 }
@@ -41,11 +42,12 @@ export const CommentSection:FunctionComponent<any> = ({postId="", showComments= 
         <div className="comments">
             
             <h3>Comments for postID: [{postId}]</h3>
-            <br/><br/>
+            <br/>
             {comments.length > 0 && 
             comments.map(comment => {
                 return (<div key={comment.commentId}>
-                    <div>PostID: {comment.commentId}</div>
+                    <div>CommentID: {comment.commentId}</div>
+                    <div>Commented By: {comment.commentedBy}</div>
                     <div>Details: {comment.details}</div>
                     <div>Updated last: {comment.updatedAt}</div>
                     <hr></hr>
