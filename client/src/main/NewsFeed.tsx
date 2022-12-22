@@ -72,7 +72,6 @@ export const NewsFeed:FunctionComponent = () => {
                     </button>
                     {post.showComments && 
                     <div style={{marginLeft:"5rem"}}>
-
                         <CommentSection
                             postId={post.postId}
                             showComments={post.showComments}
