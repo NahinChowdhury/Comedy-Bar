@@ -21,8 +21,8 @@ export const CreateOrEditComment:FunctionComponent<any> = ({postId="", commentId
     const originalFormData: CommentInterface = {
         postId: postId,
         details: "",
-        commentId: "",
-        parentCommentId: ""
+        commentId: commentId,
+        parentCommentId: parentCommentId
     };
     const [formData, setFormData] = useState<CommentInterface>(emptyFormData)
 
@@ -70,6 +70,8 @@ export const CreateOrEditComment:FunctionComponent<any> = ({postId="", commentId
                 }
             })
         }else{
+            console.log("Sending for creating reply");
+            console.log(formData)
             axios.post(`/api/global/posts/${postId}/comments`, formData)
                 .then(res => {
                     // set FetchComments to true so that parent fetches the new comments and updates the comments for

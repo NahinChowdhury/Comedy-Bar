@@ -9,11 +9,10 @@ interface CommentInterface {
     details: string;
     updatedAt: string;
     displayEditModal: boolean;
-    showComments: boolean;
-    children: CommentInterface[];
+    showReplies: boolean;
 }
 
-export const ReplySection:FunctionComponent<any> = ({postId="", commentId="", setFetch, showComments=false}) => {
+export const ReplySection:FunctionComponent<any> = ({postId="", commentId="", setFetch, showReplies=false}) => {
 
     // topComment means if the comment is a direct child of a post
     // showComments is used to toggle if we want to see the comment section
@@ -25,6 +24,7 @@ export const ReplySection:FunctionComponent<any> = ({postId="", commentId="", se
     const [displayReplyCreateModal, setDisplayReplyCreateModal] = useState<boolean>(false);
     const [fetchReplies, setFetchReplies] = useState<boolean>(true);
 
+    const username = window.localStorage.getItem('user');
 
     useEffect(() => {
 
@@ -53,6 +53,7 @@ export const ReplySection:FunctionComponent<any> = ({postId="", commentId="", se
             const error = e.response.data;
             console.log(e);
             console.log(error)
+            setReplies([])
             switch(e.response.status){
                 case 401:
                     console.log("error 401")
@@ -65,7 +66,7 @@ export const ReplySection:FunctionComponent<any> = ({postId="", commentId="", se
         setFetchReplies(false);
     },[fetchReplies])
     
-    const deleteComment = (postId: string, commentId: string) => {
+    const deleteReply = (postId: string, commentId: string) => {
         axios.delete(`/api/global/posts/${postId}/comments/${commentId}`)
         .then(res => {
             setFetchReplies(true);
@@ -87,74 +88,95 @@ export const ReplySection:FunctionComponent<any> = ({postId="", commentId="", se
 
     // It will have buttons showReplies
     return(
-        replies.length > 0 ?
         <>
-        <button type="button" onClick={ () => {
-            setDisplayReplies(prevDisplayReplies => !prevDisplayReplies);
-        }}>
-            {displayReplies ? "Hide" : "Show" } Replies
-        </button>
-
-        {
-            displayReplies &&
-            <div className="replies" style={{marginLeft:"5rem"}}>
-                <button type="button" onClick={ () => {
-                    setDisplayReplyCreateModal(prevDisplayReplyCreateModal => !prevDisplayReplyCreateModal);
-                }}>
-                    {displayReplyCreateModal ? "Hide" : "Create" } Reply
-                </button>  
-
-                {
-                    replies.map(reply => {
-                        return (
-                            <div key={reply.commentId}>
-                                <div>Reply CommentID: {reply.commentId}</div>
-                                <div>Reply Details: {reply.details}</div>
-                                <div>Reply Commented By: {reply.commentedBy}</div>
-                                <div>Reply Updated last: {reply.updatedAt}</div>
+        <div className="replies" style={{marginLeft:"5rem"}}> 
+            
+            {<h4>Replies for commentId: [{commentId}]</h4>}
+            
+            <button type="button" onClick={ () => {
+                setDisplayReplyCreateModal(prevDisplayReplyCreateModal => !prevDisplayReplyCreateModal);
+            }}>
+                {displayReplyCreateModal ? "Hide" : "Create" } Reply
+            </button>
+            {displayReplyCreateModal && <CreateOrEditComment 
+                postId={postId}
+                parentCommentId={commentId}
+                setFetchComments={setFetchReplies}
+                editMode={false}
+            />}
+            <br /><br /><br />
+            {replies.length > 0 && commentId !== '41' ?                
+                replies.map(reply => {
+                    return (
+                        <div key={reply.commentId}>
+                            <div>Reply CommentID: {reply.commentId}</div>
+                            <div>Reply Details: {reply.details}</div>
+                            <div>Reply Commented By: {reply.commentedBy}</div>
+                            <div>Reply Updated last: {reply.updatedAt}</div>
+                            {reply.commentedBy === username &&
+                                <>
+                                    <button type="button" onClick={ () => {
+                                        setReplies(prevReplies => {
+                                            return prevReplies.map(currReply => {
+                                                if(currReply.commentId === reply.commentId) {
+                                                    return{
+                                                        ...currReply,
+                                                        displayEditModal: !currReply.displayEditModal
+                                                    }
+                                                }else{
+                                                    return currReply
+                                                }
+                                            })
+                                        })
+                                    }}>
+                                        {reply.displayEditModal ? "Cancel" : "" } Edit
+                                    </button>
+                                    <button type="button" onClick={() => deleteReply(reply.postId, reply.commentId)}>
+                                        Delete
+                                    </button>
+                                    {reply.displayEditModal && <CreateOrEditComment 
+                                        postId={postId}
+                                        commentId={reply.commentId}
+                                        details={reply.details}
+                                        setFetchComments={setFetchReplies}
+                                        editMode={true}
+                                    />}
+                                </>
+                            }
+                            {
+                                <button type="button" onClick={ () => {
+                                    setReplies(prevReplies => {
+                                        return prevReplies.map(currReplies => {
+                                            if(currReplies.commentId === reply.commentId) {
+                                                return{
+                                                    ...currReplies,
+                                                    showReplies: !currReplies.showReplies
+                                                }
+                                            }else{
+                                                return currReplies
+                                            }
+                                        })
+                                    })
+                                }}>
+                                    {reply.showReplies ? "Hide" : "Show" } Replies
+                                </button>
+                            }
+                            { reply.showReplies &&
                                 <ReplySection
                                     postId={postId}
                                     commentId={reply.commentId}
                                     setFetch={setFetchReplies}
+                                    showReplies={reply.showReplies}
                                 />
-                                <br /><br />
-                            </div>
-                        )
-                    })
-                }
-                {/* {replies[0].children.length > 0 ?
-                    <>
-                        <button type="button" onClick={ () => {
-                            setReplies(prevComments => {
-                                return prevComments.map(currComment => {
-                                    if(currComment.commentId === replies[0].commentId){
-                                        return{
-                                            ...currComment,
-                                            showComments: !currComment.showComments
-                                        }
-                                    }else{
-                                        return currComment
-                                    }
-                                })
-                            })
-                        }}>
-                            {replies[0].showComments ? "Hide Replies" : "Show Replies" }
-                        </button>
-                    </>
-                    :
-                    <></>
-                } */}
-                {/* {
-                    displayReplyCreateModal && <CreateOrEditComment 
-                        postId={postId}
-                        parentCommentId={replies[0].commentId}
-                        setFetchComments={setFetchReplies}
-                        editMode={false}
-                    />
-                } */}
-            </div>}
+                            }
+                            <br /><br />
+                        </div>
+                    )
+                })
+                :
+                "No replies to show"
+            }
+        </div>
         </>
-        :
-        <>No replies to this comment</>
     )
 }

@@ -10,6 +10,7 @@ interface CommentInterface {
     details: string;
     updatedAt: string;
     displayEditModal: boolean;
+    showReplies: boolean;
 }
 
 export const CommentSection:FunctionComponent<any> = ({postId="", showComments=false}) => {
@@ -42,6 +43,7 @@ export const CommentSection:FunctionComponent<any> = ({postId="", showComments=f
             const error = e.response.data;
             console.log(e);
             console.log(error)
+            setComments([]);
             switch(e.response.status){
                 case 401:
                     console.log("error 401")
@@ -119,7 +121,7 @@ export const CommentSection:FunctionComponent<any> = ({postId="", showComments=f
                                     })
                                 })
                             }}>
-                                {comment.displayEditModal ? "Cancel" : "Edit" }
+                                {comment.displayEditModal ? "Cancel" : "" } Edit
                             </button>
                             <button type="button" onClick={() => deleteComment(comment.postId, comment.commentId)}>
                                 Delete
@@ -134,12 +136,31 @@ export const CommentSection:FunctionComponent<any> = ({postId="", showComments=f
                         </>
                         }
                         {
+                            <button type="button" onClick={ () => {
+                                setComments(prevComments => {
+                                    return prevComments.map(currComment => {
+                                        if(currComment.commentId === comment.commentId) {
+                                            return{
+                                                ...currComment,
+                                                showReplies: !currComment.showReplies
+                                            }
+                                        }else{
+                                            return currComment
+                                        }
+                                    })
+                                })
+                            }}>
+                                {comment.showReplies ? "Hide" : "Show" } Replies
+                            </button>
+                        }
+                        { comment.showReplies &&
                             // I am passing down the commentId to Reply
                             // I have no idea if my comment has any replies
                             <ReplySection
                                 postId={postId}
                                 commentId={comment.commentId}
                                 setFetch={setFetchComments}
+                                showReplies={comment.showReplies}
                             />
                         }
                         {/* <button type="button" onClick={ () => {

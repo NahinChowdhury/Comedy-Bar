@@ -65,7 +65,7 @@ export class GlobalPostController {
         const commentsFound: CommentInterface[] = await CommentModel.getAllPostComment(postId) as CommentInterface[];
 
         if(commentsFound.length === 0) {
-            return res.status(STATUS.NO_CONTENT).json({
+            return res.status(STATUS.NOT_FOUND).json({
                 message: "This post has no comments.",
                 code: "GPC002"
             });
@@ -174,17 +174,19 @@ export class GlobalPostController {
         // console.log('topLevelComments');
         // console.log(topLevelComments);
 
-        const postComments = topLevelComments.map( comment => {
-            return {
-                commentId: comment.COMMENT_ID,
-                postId: comment.POST_ID,
-                commentedBy: comment.COMMENTED_BY,
-                details: comment.DETAILS,
-                updatedAt: convertToAMPM(new Date(comment.UPDATED_AT)),  // setting time to AM/PM
-                children: getChildrenComments(comment.COMMENT_ID)
-                // children: getChildrenComments(comment.POST_ID, comment.COMMENT_ID, commentsFound)
-            }
-        })
+        const postComments = await Promise.all( // need promise because await doesnt work on map function
+            topLevelComments.map( comment => {
+                return {
+                    commentId: comment.COMMENT_ID,
+                    postId: comment.POST_ID,
+                    commentedBy: comment.COMMENTED_BY,
+                    details: comment.DETAILS,
+                    updatedAt: convertToAMPM(new Date(comment.UPDATED_AT)),  // setting time to AM/PM
+                    children: getChildrenComments(comment.COMMENT_ID)
+                    // children: getChildrenComments(comment.POST_ID, comment.COMMENT_ID, commentsFound)
+                }
+            })
+        )
 
         // console.log("FINAL postComments")
         // console.log(JSON.stringify(postComments))
@@ -227,7 +229,7 @@ export class GlobalPostController {
                     commentedBy: reply.COMMENTED_BY,
                     details: reply.DETAILS,
                     updatedAt: convertToAMPM(new Date(reply.UPDATED_AT)),  // setting time to AM/PM
-                    children: await getChildrenComments(reply.COMMENT_ID)
+                    // children: await getChildrenComments(reply.COMMENT_ID)
                 }
             })
         )
@@ -241,6 +243,7 @@ export class GlobalPostController {
 }
 
 
+// This is a recursive function
 async function getChildrenComments(parentCommentId: string): Promise<any>{
     // I will treat commentsFound as the result we get from db
     // console.log("I am in getChildren function")
