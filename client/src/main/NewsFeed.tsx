@@ -31,7 +31,8 @@ export const NewsFeed:FunctionComponent = () => {
 
             const error = e.response.data;
             console.log(e);
-            console.log(error)
+            console.log(error);
+            setPosts([]);
             switch(e.response.status){
                 case 401:
                     console.log("error 401")
@@ -78,7 +79,6 @@ export const NewsFeed:FunctionComponent = () => {
                         */}
                         <CommentSection
                             postId={post.postId}
-                            topComment={true}
                             showComments={post.showComments}
                             />
                     </div>
