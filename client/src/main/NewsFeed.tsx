@@ -72,6 +72,10 @@ export const NewsFeed:FunctionComponent = () => {
                     </button>
                     {post.showComments && 
                     <div>
+                        {/* Need to restructure.
+                            I need a post comment component.
+                            That post comment component will have replies component which will be recursive 
+                        */}
                         <CommentSection
                             postId={post.postId}
                             topComment={true}

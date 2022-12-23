@@ -91,9 +91,10 @@ export class GlobalPostController {
         
         const { postId } = req.params;
         const username = req.session?.username;
-        const { details } = req.body;
+        const { parentCommentId, details } = req.body;
 
-        const commentCreated: CommentInterface = await CommentModel.createPostComment(postId, username, details) as CommentInterface;
+
+        const commentCreated: CommentInterface = await CommentModel.createPostComment(postId, parentCommentId, username, details, ) as CommentInterface;
 
         if(commentCreated === null) {
             return res.status(STATUS.INTERNAL_SERVER_ERROR).json({

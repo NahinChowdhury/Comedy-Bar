@@ -100,10 +100,18 @@ export class CommentModel implements CommentInterface {
         })
     }
 
-    static createPostComment(postId: string, commentedBy: string, details: string): Promise<CommentInterface | null> {
+    static createPostComment(postId: string, parentCommentId: string, commentedBy: string, details: string): Promise<CommentInterface | null> {
 
-        const query = `INSERT INTO public."Comments" ("POST_ID", "COMMENTED_BY" , "DETAILS") VALUES ($1, $2, $3) returning *;`;
-        const params = [postId, commentedBy, details,];
+        let query = "";
+        let params: string[] = [];
+        if(parentCommentId === ""){
+            query = `INSERT INTO public."Comments" ("POST_ID", "COMMENTED_BY" , "DETAILS") VALUES ($1, $2, $3) returning *;`;
+            params = [postId, commentedBy, details];
+        }else{
+            query = `INSERT INTO public."Comments" ("POST_ID", "COMMENTED_BY" , "DETAILS", "PARENT_COMMENT_ID") VALUES ($1, $2, $3, $4) returning *;`;
+            params = [postId, commentedBy, details, parentCommentId];
+            
+        }
 
         return new Promise((resolve, reject) => {
             client.query(query, params)

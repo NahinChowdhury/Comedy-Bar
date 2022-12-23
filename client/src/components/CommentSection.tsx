@@ -15,8 +15,13 @@ interface CommentInterface {
 
 export const CommentSection:FunctionComponent<any> = ({postId="", commentId="", topComment=false, showComments=false, children=[]}) => {
 
+    // topComment means if the comment is a direct child of a post
+    // showComments is used to toggle if we want to see the comment section
+    // children is the children of comments. It is empty if 
+
     const [comments, setComments] = useState<CommentInterface[]>(children);
     const [displayCreateModal, setDisplayCreateModal] = useState<boolean>(false);
+    const [displayReplyCreateModal, setDisplayReplyCreateModal] = useState<boolean>(false);
     const [fetchComments, setFetchComments] = useState<boolean>(true);
 
     const username = window.localStorage.getItem('user');
@@ -57,13 +62,6 @@ export const CommentSection:FunctionComponent<any> = ({postId="", commentId="", 
 
         setFetchComments(false);
     },[fetchComments])
-
-
-    useEffect(() => {
-
-        console.log("comments[0]")
-        console.log(comments.length > 0 ? comments[0] :"")
-    }, [comments])
     
     const deleteComment = (postId: string, commentId: string) => {
         axios.delete(`/api/global/posts/${postId}/comments/${commentId}`)
@@ -94,12 +92,12 @@ export const CommentSection:FunctionComponent<any> = ({postId="", commentId="", 
         showComments &&
         <div className="comments" style={{marginLeft:"5rem"}}>
             
-            <h3>Comments for postID: [{postId}]</h3>
+            {topComment &&<h3>Comments for postID: [{postId}]</h3>}
 
             <button type="button" onClick={ () => {
                 setDisplayCreateModal(prevDisplayCreateModal => !prevDisplayCreateModal);
             }}>
-                {displayCreateModal ? "Hide" : "Create" }
+                {displayCreateModal ? "Hide" : "Create" } Comment
             </button>
             {displayCreateModal && <CreateOrEditComment 
                 postId={postId}
@@ -144,9 +142,13 @@ export const CommentSection:FunctionComponent<any> = ({postId="", commentId="", 
                             />}
                         </>
                         }
+                        <button type="button" onClick={ () => {
+                            setDisplayReplyCreateModal(prevDisplayReplyCreateModal => !prevDisplayReplyCreateModal);
+                        }}>
+                            {displayReplyCreateModal ? "Hide" : "Create" } Reply
+                        </button>
                         {comment.children.length > 0 ?
                             <>
-                                <>{console.log(`${comment.commentId}: ${comment.children.length}`)}</>
                                 <button type="button" onClick={ () => {
                                     setComments(prevComments => {
                                         return prevComments.map(currComment => {
@@ -163,19 +165,28 @@ export const CommentSection:FunctionComponent<any> = ({postId="", commentId="", 
                                 }}>
                                     {comment.showComments ? "Hide Replies" : "Show Replies" }
                                 </button>
-                                {comment.showComments && <>
-                                {console.log("SHOWING REPLIES")}
-                                    <CommentSection
-                                        postId={postId}
-                                        children={comment.children}
-                                        commentId={comment.commentId}
-                                        // showChildren={comment.showChildren}
-                                        showComments={true}
-                                    />
-                                </>}
                             </>
                             :
                             <></>
+                        }
+                        {displayReplyCreateModal && <CreateOrEditComment 
+                            postId={postId}
+                            parentCommentId={comment.commentId}
+                            setFetchComments={setFetchComments}
+                            editMode={false}
+                        />}
+                        <br/><br/>
+
+                        {comment.children.length > 0
+                            &&
+                            comment.showComments &&
+                                <CommentSection
+                                    postId={postId}
+                                    children={comment.children}
+                                    commentId={comment.commentId}
+                                    // showChildren={comment.showChildren}
+                                    showComments={true}
+                                />
                         }
                         <hr></hr>
                         <br/><br/>

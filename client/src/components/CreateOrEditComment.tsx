@@ -5,20 +5,24 @@ interface CommentInterface {
     postId: string;
     details: string;
     commentId: string;
+    parentCommentId: string;
 }
 
-export const CreateOrEditComment:FunctionComponent<any> = ({postId="", commentId="", details="", setFetchComments, editMode}) => {
+export const CreateOrEditComment:FunctionComponent<any> = ({postId="", commentId="", parentCommentId="", details="", setFetchComments, editMode}) => {
+    // parentCommentId will be empty string when we are creating a comment for a post. Otherwise we are creating a reply of a reply
 
     const emptyFormData: CommentInterface = {
         postId: postId,
         details: details,
         commentId: commentId,
+        parentCommentId: parentCommentId
     };
 
     const originalFormData: CommentInterface = {
         postId: postId,
         details: "",
         commentId: "",
+        parentCommentId: ""
     };
     const [formData, setFormData] = useState<CommentInterface>(emptyFormData)
 
@@ -93,7 +97,7 @@ export const CreateOrEditComment:FunctionComponent<any> = ({postId="", commentId
     return ( 
         <div className="create-comment">
             <div>
-                {"Details:  "}
+                {parentCommentId === "" ?  "Comment" : "Reply"} Details:
                 <input 
                     type="text" 
                     name="details" 
