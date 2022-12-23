@@ -48,6 +48,31 @@ export class CommentModel implements CommentInterface {
                 .catch(err => reject(err));
         })
     }
+    
+    static getAllPostComment(postId: string): Promise<CommentInterface[] | null> {
+
+        const query = `Select * FROM public."Comments" c 
+                        WHERE "POST_ID" = $1 AND "PARENT_COMMENT_ID" IS NULL
+                        ORDER BY "UPDATED_AT" DESC;`;
+        const params = [postId]
+
+        return new Promise((resolve, reject) => {
+            client.query(query, params)
+                .then(res => {
+                    const data = res.rows;
+                    console.log("data")
+                    console.log(data)
+                    
+                    resolve(
+                        data.map( d=> {
+                            return new CommentModel(d);
+                        })
+                    );
+                    
+                })
+                .catch(err => reject(err));
+        })
+    }
 
     static updatePostComment(commentId: string, postId: string, commentedBy: string, details: string): Promise<CommentInterface | null> {
 
