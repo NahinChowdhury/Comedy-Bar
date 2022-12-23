@@ -78,7 +78,6 @@ export const NewsFeed:FunctionComponent = () => {
                         */}
                         <CommentSection
                             postId={post.postId}
-                            topComment={true}
                             showComments={post.showComments}
                             />
                     </div>

@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, {FunctionComponent, useEffect, useState} from "react";
 import { CreateOrEditComment } from "./CreateOrEditComment";
+import { ReplySection } from "./ReplySection";
 
 interface CommentInterface {
     postId: string;
@@ -9,17 +10,15 @@ interface CommentInterface {
     details: string;
     updatedAt: string;
     displayEditModal: boolean;
-    showComments: boolean;
-    children: CommentInterface[];
 }
 
-export const CommentSection:FunctionComponent<any> = ({postId="", commentId="", topComment=false, showComments=false, children=[]}) => {
+export const CommentSection:FunctionComponent<any> = ({postId="", showComments=false}) => {
 
     // topComment means if the comment is a direct child of a post
     // showComments is used to toggle if we want to see the comment section
     // children is the children of comments. It is empty if 
 
-    const [comments, setComments] = useState<CommentInterface[]>(children);
+    const [comments, setComments] = useState<CommentInterface[]>([]);
     const [displayCreateModal, setDisplayCreateModal] = useState<boolean>(false);
     const [displayReplyCreateModal, setDisplayReplyCreateModal] = useState<boolean>(false);
     const [fetchComments, setFetchComments] = useState<boolean>(true);
@@ -27,23 +26,15 @@ export const CommentSection:FunctionComponent<any> = ({postId="", commentId="", 
     const username = window.localStorage.getItem('user');
 
     useEffect(() => {
-
-        if(!topComment) return;
         if(fetchComments === false) return;
 
-        axios.get(`/api/global/posts/${postId}/comments/all`)
+        axios.get(`/api/global/posts/${postId}/comments`)
         .then(res => {
             const { postComments } = res.data;
 
+            console.log('postComments');
             console.log(postComments);
-            setComments(() => {
-                return postComments.map((comment:CommentInterface) => {
-                    return {
-                        ...comment,
-                        showChildren: false
-                    }
-                })
-            });
+            setComments(postComments);
 
         })
         .catch(e => {
@@ -92,7 +83,7 @@ export const CommentSection:FunctionComponent<any> = ({postId="", commentId="", 
         showComments &&
         <div className="comments" style={{marginLeft:"5rem"}}>
             
-            {topComment &&<h3>Comments for postID: [{postId}]</h3>}
+            {<h3>Comments for postID: [{postId}]</h3>}
 
             <button type="button" onClick={ () => {
                 setDisplayCreateModal(prevDisplayCreateModal => !prevDisplayCreateModal);
@@ -142,7 +133,16 @@ export const CommentSection:FunctionComponent<any> = ({postId="", commentId="", 
                             />}
                         </>
                         }
-                        <button type="button" onClick={ () => {
+                        {
+                            // I am passing down the commentId to Reply
+                            // I have no idea if my comment has any replies
+                            <ReplySection
+                                postId={postId}
+                                commentId={comment.commentId}
+                                setFetch={setFetchComments}
+                            />
+                        }
+                        {/* <button type="button" onClick={ () => {
                             setDisplayReplyCreateModal(prevDisplayReplyCreateModal => !prevDisplayReplyCreateModal);
                         }}>
                             {displayReplyCreateModal ? "Hide" : "Create" } Reply
@@ -174,10 +174,10 @@ export const CommentSection:FunctionComponent<any> = ({postId="", commentId="", 
                             parentCommentId={comment.commentId}
                             setFetchComments={setFetchComments}
                             editMode={false}
-                        />}
+                        />} */}
                         <br/><br/>
 
-                        {comment.children.length > 0
+                        {/* {comment.children.length > 0
                             &&
                             comment.showComments &&
                                 <CommentSection
@@ -187,7 +187,7 @@ export const CommentSection:FunctionComponent<any> = ({postId="", commentId="", 
                                     // showChildren={comment.showChildren}
                                     showComments={true}
                                 />
-                        }
+                        } */}
                         <hr></hr>
                         <br/><br/>
                     </div>)
