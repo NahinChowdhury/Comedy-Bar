@@ -8,7 +8,7 @@ interface PostInterface {
     updatedAt: string;
 }
 
-export const CreateOrEditPost:FunctionComponent<any> = ({postId="", title="", details="", updatedAt="", editMode}) => {
+export const CreateOrEditPost:FunctionComponent<any> = ({postId="", title="", details="", updatedAt="", setFetch, editMode}) => {
 
     const originalFormData: PostInterface = {
         postId: postId,
@@ -51,8 +51,7 @@ export const CreateOrEditPost:FunctionComponent<any> = ({postId="", title="", de
             // change to put and send req to backend /posts
             axios.put(`/api/user/posts/${formData.postId}`, formData)
                 .then(res => {
-                    // reload to see the updated post
-                    window.location.reload();
+                    setFetch(true);
                 })
                 .catch(e => {
                     const error = e.response.data;
@@ -69,8 +68,7 @@ export const CreateOrEditPost:FunctionComponent<any> = ({postId="", title="", de
         }else{
             axios.post(`/api/user/posts`, formData)
                 .then(res => {
-                    // reload to see the created post
-                    window.location.reload();
+                    setFetch(true);
                 })
                 .catch(e => {
                     const error = e.response.data;

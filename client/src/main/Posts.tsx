@@ -35,12 +35,13 @@ export const Posts:FunctionComponent = () => {
             const error = e.response.data;
             console.log(e);
             console.log(error)
+            setPosts([]);
             switch(e.response.status){
                 case 401:
                     console.log("error 401")
                     break;
                 default:
-                    alert(`${error.message}. CODE: ${error.code}`);
+                    // alert(`${error.message}. CODE: ${error.code}`);
             }
         })
 
@@ -59,6 +60,7 @@ export const Posts:FunctionComponent = () => {
             const error = e.response.data;
             console.log(e);
             console.log(error)
+            setFetchPosts(true);
             switch(e.response.status){
                 case 401:
                     console.log("error 401")
@@ -79,6 +81,7 @@ export const Posts:FunctionComponent = () => {
                 {displayCreateModal ? "Hide" : "Create" }
             </button>
             {displayCreateModal && <CreateOrEditPost 
+                setFetch={setFetchPosts}
                 editMode={false}
             />}
             <hr></hr>
@@ -112,6 +115,7 @@ export const Posts:FunctionComponent = () => {
                         title={post.title}
                         details={post.details}
                         updatedAt={post.updatedAt}
+                        setFetch={setFetchPosts}
                         editMode={true}
                     />}
                     <button type="button" onClick={ () => {setPosts(prevPosts => {
