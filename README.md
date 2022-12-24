@@ -3,7 +3,7 @@
 Plan is to create an app where users can post normal status and also livestream where other users can join the stream.
 Kind of a blend between Facebook and Twitch
 
-Will add chat feature afterwards.
+Will add chat feature afterwards. Users can add friends later on
 
 Thinking of creating a music promotion site instead. Users can publish their songs in the form of posts.
 Other users get those posts recommended to them in their news feed. If they start their song, a bar pops up in the bottom like spotify or yt music.

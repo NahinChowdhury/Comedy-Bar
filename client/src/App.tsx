@@ -7,6 +7,8 @@ import { Profile } from "./main/Profile";
 import { NotFound } from "./others/NotFound";
 import { Posts } from "./main/Posts";
 import { NewsFeed } from "./main/NewsFeed";
+import { Chat } from "./main/Chat";
+
 import './App.css';
 
 function App() {
@@ -33,6 +35,7 @@ function App() {
 					<Route path="/posts" element={ <Posts /> } />
 				</Route>
 
+				<Route path="/chat" element={ <Chat /> } />
 				<Route path="/signup" element={ <Signup /> } />
 				<Route path="/login" element={<Login />}/>
 

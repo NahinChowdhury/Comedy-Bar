@@ -8,6 +8,7 @@ export const Footer:FunctionComponent = () => {
             <br/>
             <hr/>
             <div style={{display:"flex", flexDirection:"row", justifyContent: "space-around", marginTop:"auto"}}>
+                <Link to="/chat">Chat</Link>
                 <Link to="/profile">Profile</Link>
                 <Link to="/login">Log In</Link>
                 <Link to="/signup">Sign up</Link>
