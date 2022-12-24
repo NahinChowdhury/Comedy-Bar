@@ -1,7 +1,6 @@
 import axios from "axios";
 import React, {FunctionComponent, useState, useEffect} from "react";
-import { CommentSection } from "../components/CommentSection";
-import { CreateOrEditPost } from "../components/CreateOrEditPost";
+import { CommentSection } from "../components/comments/CommentSection";
 
 
 export const NewsFeed:FunctionComponent = () => {
@@ -73,10 +72,6 @@ export const NewsFeed:FunctionComponent = () => {
                     </button>
                     {post.showComments && 
                     <div>
-                        {/* Need to restructure.
-                            I need a post comment component.
-                            That post comment component will have replies component which will be recursive 
-                        */}
                         <CommentSection
                             postId={post.postId}
                             showComments={post.showComments}

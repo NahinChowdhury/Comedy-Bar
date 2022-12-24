@@ -1,29 +1,11 @@
 import { Controller, Get, Post, Put, Delete, Middleware } from "@overnightjs/core";
 import { Request, Response } from "express";
 import { StatusCodes as STATUS}  from "http-status-codes";
-import { CommentModel } from "../../models/Comment";
-import { PostModel } from "../../models/Post";
+import { CommentModel, CommentInterface } from "../../models/Comment";
+import { PostModel, PostInterface } from "../../models/Post";
 import { isLoggedIn } from "../../middlewares/LoggedIn";
 import { convertToAMPM } from "../../utils/helperFunctions";
 
-interface PostInterface {
-    POST_ID?: string;
-    USERNAME?: string;
-    TITLE?: string;
-    DETAILS?: string;
-    UPDATED_AT?: Date;
-    CREATED_AT?: Date;
-}
-
-interface CommentInterface {
-    COMMENT_ID?: string;
-    POST_ID?: string;
-    COMMENTED_BY?: string;
-    DETAILS?: string;
-    CREATED_AT?: Date;
-    UPDATED_AT?: Date;
-    PARENT_COMMENT_ID?: string;
-}
 @Controller("posts")
 export class GlobalPostController {
     
@@ -33,28 +15,37 @@ export class GlobalPostController {
 
         const username = req.session?.username;
 
-        const postsFound: PostInterface[] = await PostModel.getGlobalPosts(username) as PostInterface[];
+        try{
+            const postsFound: PostInterface[] = await PostModel.getGlobalPosts(username) as PostInterface[];
+            
+            if(postsFound.length === 0) {
+                return res.status(STATUS.NOT_FOUND).json({
+                    message: "User has no posts.",
+                    code: "GPC001"
+                });
+            }
+            console.log("GOT ALL POSTS")
 
-        if(postsFound.length === 0) {
-            return res.status(STATUS.NOT_FOUND).json({
-                message: "User has no posts.",
-                code: "GPC001"
+            const globalPosts = postsFound.map( post => {
+
+                return {
+                    postId: post.POST_ID,
+                    username: post.USERNAME,
+                    title: post.TITLE,
+                    details: post.DETAILS,
+                    updatedAt: convertToAMPM(new Date(post.UPDATED_AT))  // setting time to AM/PM
+                }
+            })
+
+
+            return res.status(STATUS.OK).json({globalPosts: globalPosts});
+
+        }catch(e){
+            return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
+                message: e.message,
+                code: e.code
             });
         }
-
-        const globalPosts = postsFound.map( post => {
-
-            return {
-                postId: post.POST_ID,
-                username: post.USERNAME,
-                title: post.TITLE,
-                details: post.DETAILS,
-                updatedAt: convertToAMPM(new Date(post.UPDATED_AT))  // setting time to AM/PM
-            }
-        })
-
-
-        return res.status(STATUS.OK).json({globalPosts: globalPosts});
     }
 
     @Get(":postId/comments")
@@ -62,27 +53,35 @@ export class GlobalPostController {
     public async getPostComments(req: Request, res: Response): Promise<Response> {
         const { postId } = req.params;
 
-        const commentsFound: CommentInterface[] = await CommentModel.getAllPostComment(postId) as CommentInterface[];
+        try{
+            const commentsFound: CommentInterface[] = await CommentModel.getAllPostComment(postId) as CommentInterface[];
 
-        if(commentsFound.length === 0) {
-            return res.status(STATUS.NOT_FOUND).json({
-                message: "This post has no comments.",
-                code: "GPC002"
+            if(commentsFound.length === 0) {
+                return res.status(STATUS.NOT_FOUND).json({
+                    message: "This post has no comments.",
+                    code: "GPC002"
+                });
+            }
+
+            const postComments = commentsFound.map( comment => {
+                return {
+                    commentId: comment.COMMENT_ID,
+                    postId: comment.POST_ID,
+                    commentedBy: comment.COMMENTED_BY,
+                    details: comment.DETAILS,
+                    updatedAt: convertToAMPM(new Date(comment.UPDATED_AT))  // setting time to AM/PM
+                }
+            })
+
+
+            return res.status(STATUS.OK).json({postComments: postComments});
+
+        }catch(e){
+            return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
+                message: e.message,
+                code: e.code
             });
         }
-
-        const postComments = commentsFound.map( comment => {
-            return {
-                commentId: comment.COMMENT_ID,
-                postId: comment.POST_ID,
-                commentedBy: comment.COMMENTED_BY,
-                details: comment.DETAILS,
-                updatedAt: convertToAMPM(new Date(comment.UPDATED_AT))  // setting time to AM/PM
-            }
-        })
-
-
-        return res.status(STATUS.OK).json({postComments: postComments});
     }
 
     @Post(":postId/comments")
@@ -93,15 +92,21 @@ export class GlobalPostController {
         const username = req.session?.username;
         const { parentCommentId, details } = req.body;
 
-
-        const commentCreated: CommentInterface = await CommentModel.createPostComment(postId, parentCommentId, username, details, ) as CommentInterface;
-
-        if(commentCreated === null) {
+        try{
+            const commentCreated: CommentInterface = await CommentModel.createPostComment(postId, parentCommentId, username, details, ) as CommentInterface;
+            
+            if(commentCreated === null) {
+                return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
+                    message: "Comment could not be created. Please try again.",
+                    code: "UPC003"
+                });
+                
+            }
+        }catch(e){
             return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
-                message: "Comment could not be created. Please try again.",
-                code: "UPC003"
+                message: e.message,
+                code: e.code
             });
-
         }
 
         return res.status(STATUS.OK).json({message: "Comment has been created."});
@@ -115,14 +120,23 @@ export class GlobalPostController {
         const username = req.session?.username;
         const { commentId, details } = req.body;
 
-        const commentUpdated: CommentInterface = await CommentModel.updatePostComment(commentId, postId, username, details) as CommentInterface;
+        try{
 
-        if(commentUpdated === null) {
+            const commentUpdated: CommentInterface = await CommentModel.updatePostComment(commentId, postId, username, details) as CommentInterface;
+            
+            if(commentUpdated === null) {
+                return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
+                    message: "Comment could not be updated. Please try again.",
+                    code: "UPC004"
+                });
+                
+            }
+        }catch(e){
+            console.log(e);
             return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
-                message: "Comment could not be updated. Please try again.",
-                code: "UPC004"
+                message: e.message,
+                code: e.code,
             });
-
         }
 
         return res.status(STATUS.OK).json({message: "Comment has been updated."});
@@ -130,21 +144,28 @@ export class GlobalPostController {
 
     @Delete(":postId/comments/:commentId")
     @Middleware([isLoggedIn])
-    public async deleteUserPost(req: Request, res: Response): Promise<Response> {
+    public async deleteUserComment(req: Request, res: Response): Promise<Response> {
 
         const username = req.session?.username;
         const { postId, commentId } = req.params;
 
-        const commentDeleted: CommentInterface = await CommentModel.deletePostComment(commentId, postId, username) as CommentInterface;
+        try{
+            const commentDeleted: CommentInterface = await CommentModel.deletePostComment(commentId, postId, username) as CommentInterface;
 
-        if(commentDeleted === null) {
+            if(commentDeleted === null) {
+                return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
+                    message: "Comment could not be deleted. Please try again.",
+                    code: "UPC004"
+                });
+
+            }
+        }catch(e){
             return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
-                message: "Comment could not be deleted. Please try again.",
-                code: "UPC004"
+                message: e.message,
+                code: e.code
             });
-
         }
-        
+
         return res.status(STATUS.OK).json({message: "Comment has been deleted."});
     }
 
@@ -154,45 +175,39 @@ export class GlobalPostController {
     public async getAllPostComments(req: Request, res: Response): Promise<Response> {
         const { postId } = req.params;
 
-        // should I get all comments at first try
-        // it is safe to request all and run recursion so that we don't overload database while creating the algorithm
-        const commentsFound: CommentInterface[] = await CommentModel.getPostComment(postId) as CommentInterface[];
-        // const commentsFound: CommentInterface[] = await CommentModel.getAllPostComment(postId) as CommentInterface[];
+        try{
+            const commentsFound: CommentInterface[] = await CommentModel.getPostComment(postId) as CommentInterface[];
 
-        if(commentsFound.length === 0) {
-            return res.status(STATUS.NOT_FOUND).json({
-                message: "This post has no comments.",
-                code: "GPC005"
+            if(commentsFound.length === 0) {
+                return res.status(STATUS.NOT_FOUND).json({
+                    message: "This post has no comments.",
+                    code: "GPC005"
+                });
+            }
+            const topLevelComments = commentsFound.filter(comment => comment.PARENT_COMMENT_ID === null);
+
+
+            const postComments = await Promise.all( // need promise because await doesnt work on map function
+                topLevelComments.map( comment => {
+                    return {
+                        commentId: comment.COMMENT_ID,
+                        postId: comment.POST_ID,
+                        commentedBy: comment.COMMENTED_BY,
+                        details: comment.DETAILS,
+                        updatedAt: convertToAMPM(new Date(comment.UPDATED_AT)),  // setting time to AM/PM
+                        children: getChildrenComments(comment.COMMENT_ID)
+                    }
+                })
+            )
+            return res.status(STATUS.OK).json({postComments: postComments});
+
+        }catch(e){
+            return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
+                message: e.message,
+                code: e.code
             });
         }
-        // I get a list of comments who are direct children of post
-        // I need to create an object now and for each comment, I need to request more comments whose parent_comment_id is my comment_id
 
-        // end recursion when parent is null.
-        const topLevelComments = commentsFound.filter(comment => comment.PARENT_COMMENT_ID === null);
-
-        // console.log('topLevelComments');
-        // console.log(topLevelComments);
-
-        const postComments = await Promise.all( // need promise because await doesnt work on map function
-            topLevelComments.map( comment => {
-                return {
-                    commentId: comment.COMMENT_ID,
-                    postId: comment.POST_ID,
-                    commentedBy: comment.COMMENTED_BY,
-                    details: comment.DETAILS,
-                    updatedAt: convertToAMPM(new Date(comment.UPDATED_AT)),  // setting time to AM/PM
-                    children: getChildrenComments(comment.COMMENT_ID)
-                    // children: getChildrenComments(comment.POST_ID, comment.COMMENT_ID, commentsFound)
-                }
-            })
-        )
-
-        // console.log("FINAL postComments")
-        // console.log(JSON.stringify(postComments))
-
-        // return res.status(STATUS.OK).json({postComments: "postComments"});
-        return res.status(STATUS.OK).json({postComments: postComments});
     }
     
     @Get(":postId/comments/:commentId")
@@ -200,45 +215,36 @@ export class GlobalPostController {
     public async getAllCommentReplies(req: Request, res: Response): Promise<Response> {
         const { postId, commentId } = req.params;
 
-        console.log("GOT REQUEST FOR: " + commentId);
-        // should I get all comments at first try
-        // it is safe to request all and run recursion so that we don't overload database while creating the algorithm
-        const repliesFound: CommentInterface[] = await CommentModel.getCommentReplies(commentId) as CommentInterface[];
-        // const commentsFound: CommentInterface[] = await CommentModel.getAllPostComment(postId) as CommentInterface[];
+        try{
+            const repliesFound: CommentInterface[] = await CommentModel.getCommentReplies(commentId) as CommentInterface[];
 
-        if(repliesFound.length === 0) {
-            return res.status(STATUS.NOT_FOUND).json({
-                message: "This comments has no replies.",
-                code: "GPC006"
+            if(repliesFound.length === 0) {
+                return res.status(STATUS.NOT_FOUND).json({
+                    message: "This comments has no replies.",
+                    code: "GPC006"
+                });
+            }
+
+            const commentReplies = await Promise.all( // need promise because await doesnt work on map function
+                repliesFound.map( async (reply) => {
+                    return {
+                        commentId: reply.COMMENT_ID,
+                        postId: reply.POST_ID,
+                        commentedBy: reply.COMMENTED_BY,
+                        details: reply.DETAILS,
+                        updatedAt: convertToAMPM(new Date(reply.UPDATED_AT)),  // setting time to AM/PM
+                    }
+                })
+            )
+
+            return res.status(STATUS.OK).json({commentReplies: commentReplies});
+
+        }catch(e){
+            return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
+                message: e.message,
+                code: e.code
             });
         }
-        // I get a list of comments who are direct children of post
-        // I need to create an object now and for each comment, I need to request more comments whose parent_comment_id is my comment_id
-
-        // end recursion when parent is null.
-        // const topLevelReplies = repliesFound.filter(reply => reply.PARENT_COMMENT_ID === commentId);
-
-        // console.log('topLevelComments');
-        // console.log(topLevelComments);
-
-        const commentReplies = await Promise.all( // need promise because await doesnt work on map function
-            repliesFound.map( async (reply) => {
-                return {
-                    commentId: reply.COMMENT_ID,
-                    postId: reply.POST_ID,
-                    commentedBy: reply.COMMENTED_BY,
-                    details: reply.DETAILS,
-                    updatedAt: convertToAMPM(new Date(reply.UPDATED_AT)),  // setting time to AM/PM
-                    // children: await getChildrenComments(reply.COMMENT_ID)
-                }
-            })
-        )
-
-        console.log("FINAL postComments")
-        console.log(JSON.stringify(commentReplies))
-
-        // return res.status(STATUS.OK).json({postComments: "postComments"});
-        return res.status(STATUS.OK).json({commentReplies: commentReplies});
     }
 }
 

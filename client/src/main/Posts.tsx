@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, {FunctionComponent, useState, useEffect} from "react";
-import { CreateOrEditPost } from "../components/CreateOrEditPost";
+import { CommentSection } from "../components/comments/CommentSection";
+import { CreateOrEditPost } from "../components/posts/CreateOrEditPost";
 
 
 export const Posts:FunctionComponent = () => {
@@ -12,13 +13,17 @@ export const Posts:FunctionComponent = () => {
         details: string;
         updatedAt: string;
         displayEditModal: boolean;
+        showComments: boolean;
     }
 
     
     const [posts, setPosts] = useState<PostInterface[]>([]);
     const [displayCreateModal, setDisplayCreateModal] = useState<boolean>(false);
+    const [fetchPosts, setFetchPosts] = useState<boolean>(true);
 
-    useEffect(() => { 
+    useEffect(() => {
+        if(fetchPosts === false) return;
+
         axios.get('/api/user/posts')
         .then(res => {
             const { userPosts } = res.data;
@@ -30,27 +35,32 @@ export const Posts:FunctionComponent = () => {
             const error = e.response.data;
             console.log(e);
             console.log(error)
+            setPosts([]);
             switch(e.response.status){
                 case 401:
                     console.log("error 401")
                     break;
                 default:
-                    alert(`${error.message}. CODE: ${error.code}`);
+                    // alert(`${error.message}. CODE: ${error.code}`);
             }
         })
-    },[])
+
+        setFetchPosts(false);
+    },[fetchPosts])
+
 
     const deletePost = (postId: string) => {
+        console.log("Sending delete req for post: " + postId);
         axios.delete(`/api/user/posts/${postId}`)
         .then(res => {
-            // reload to see the deleted post
-            window.location.reload();
+            setFetchPosts(true);
         })
         .catch(e => {
 
             const error = e.response.data;
             console.log(e);
             console.log(error)
+            setFetchPosts(true);
             switch(e.response.status){
                 case 401:
                     console.log("error 401")
@@ -71,6 +81,7 @@ export const Posts:FunctionComponent = () => {
                 {displayCreateModal ? "Hide" : "Create" }
             </button>
             {displayCreateModal && <CreateOrEditPost 
+                setFetch={setFetchPosts}
                 editMode={false}
             />}
             <hr></hr>
@@ -104,8 +115,31 @@ export const Posts:FunctionComponent = () => {
                         title={post.title}
                         details={post.details}
                         updatedAt={post.updatedAt}
+                        setFetch={setFetchPosts}
                         editMode={true}
                     />}
+                    <button type="button" onClick={ () => {setPosts(prevPosts => {
+                        return prevPosts.map(currPost => {
+                            if(currPost.postId === post.postId){
+                                return{
+                                    ...currPost,
+                                    showComments: !currPost.showComments
+                                }
+                            }else{
+                                return currPost
+                            }
+                        })
+                    })}}>
+                        {post.showComments ? "Hide Comments" : "Show Comments" }
+                    </button>
+                    {post.showComments && 
+                    <div>
+                        <CommentSection
+                            postId={post.postId}
+                            showComments={post.showComments}
+                            />
+                    </div>
+                    }
                     <hr></hr>
                     <br/><br/><br/>
                 </div>)

@@ -3,16 +3,7 @@ import { Request, Response } from "express";
 import { StatusCodes as STATUS}  from "http-status-codes";
 import { convertToAMPM } from "../../utils/helperFunctions";
 import { isLoggedIn } from "../../middlewares/LoggedIn";
-import { PostModel } from "../../models/Post";
-
-interface PostInterface {
-    POST_ID?: string;
-    USERNAME?: string;
-    TITLE?: string;
-    DETAILS?: string;
-    UPDATED_AT?: Date;
-    CREATED_AT?: Date;
-}
+import { PostModel, PostInterface } from "../../models/Post";
 
 @Controller("posts")
 export class PostController {
@@ -23,27 +14,35 @@ export class PostController {
 
         const username = req.session?.username;
 
-        const postsFound: PostInterface[] = await PostModel.getUserPost(username) as PostInterface[];
+        try{
+            const postsFound: PostInterface[] = await PostModel.getUserPost(username) as PostInterface[];
 
-        if(postsFound.length === 0) {
-            return res.status(STATUS.NOT_FOUND).json({
-                message: "User has no posts.",
-                code: "UPC001"
+            if(postsFound.length === 0) {
+                return res.status(STATUS.NOT_FOUND).json({
+                    message: "User has no posts.",
+                    code: "UPC001"
+                });
+            }
+
+            const userPosts = postsFound.map( post => {
+
+                return {
+                    postId: post.POST_ID,
+                    title: post.TITLE,
+                    details: post.DETAILS,
+                    updatedAt: convertToAMPM(new Date(post.UPDATED_AT))  // setting time to AM/PM
+                }
+            })
+
+
+            return res.status(STATUS.OK).json({userPosts: userPosts});
+            
+        }catch(e){
+            return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
+                message: e.message,
+                code: e.code
             });
         }
-
-        const userPosts = postsFound.map( post => {
-
-            return {
-                postId: post.POST_ID,
-                title: post.TITLE,
-                details: post.DETAILS,
-                updatedAt: convertToAMPM(new Date(post.UPDATED_AT))  // setting time to AM/PM
-            }
-        })
-
-
-        return res.status(STATUS.OK).json({userPosts: userPosts});
     }
 
     @Put(":id")
@@ -54,14 +53,21 @@ export class PostController {
         const {id} = req.params;
         const {title, details} = req.body;
 
-        const postCreated: PostInterface = await PostModel.updateUserPost(username, id, title, details) as PostInterface;
+        try{
+            const postCreated: PostInterface = await PostModel.updateUserPost(username, id, title, details) as PostInterface;
 
-        if(postCreated === null) {
+            if(postCreated === null) {
+                return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
+                    message: "Post could not be updated. Please try again.",
+                    code: "UPC002"
+                });
+
+            }
+        }catch(e){
             return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
-                message: "Post could not be updated. Please try again.",
-                code: "UPC002"
+                message: e.message,
+                code: e.code
             });
-
         }
 
         return res.status(STATUS.OK).json({message: "Post has been updated."});
@@ -74,14 +80,21 @@ export class PostController {
         const username = req.session?.username;
         const {title, details} = req.body;
 
-        const postCreated: PostInterface = await PostModel.createUserPost(username, title, details) as PostInterface;
+        try{
+            const postCreated: PostInterface = await PostModel.createUserPost(username, title, details) as PostInterface;
 
-        if(postCreated === null) {
+            if(postCreated === null) {
+                return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
+                    message: "Post could not be created. Please try again.",
+                    code: "UPC003"
+                });
+
+            }
+        }catch(e){
             return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
-                message: "Post could not be created. Please try again.",
-                code: "UPC003"
+                message: e.message,
+                code: e.code
             });
-
         }
 
         return res.status(STATUS.OK).json({message: "Post has been created."});
@@ -94,14 +107,21 @@ export class PostController {
         const username = req.session?.username;
         const {id} = req.params;
 
-        const postDeleted: PostInterface = await PostModel.deleteUserPost(username, id) as PostInterface;
+        try{
+            const postDeleted: PostInterface = await PostModel.deleteUserPost(id, username) as PostInterface;
 
-        if(postDeleted === null) {
+            if(postDeleted === null) {
+                return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
+                    message: "Post could not be deleted. Please try again.",
+                    code: "UPC004"
+                });
+
+            }
+        }catch(e){
             return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
-                message: "Post could not be deleted. Please try again.",
-                code: "UPC004"
+                message: e.message,
+                code: e.code
             });
-
         }
 
         return res.status(STATUS.OK).json({message: "Post has been deleted."});

@@ -30,8 +30,6 @@ export const ReplySection:FunctionComponent<any> = ({postId="", commentId="", se
 
         if(fetchReplies === false) return;
 
-        console.log('SENDING REQUEST FOR' + commentId);
-        // send request to /api/global/posts/${postId}/comments/${commentId}
         axios.get(`/api/global/posts/${postId}/comments/${commentId}`)
         .then(res => {
             const { commentReplies } = res.data;
@@ -96,7 +94,7 @@ export const ReplySection:FunctionComponent<any> = ({postId="", commentId="", se
             <button type="button" onClick={ () => {
                 setDisplayReplyCreateModal(prevDisplayReplyCreateModal => !prevDisplayReplyCreateModal);
             }}>
-                {displayReplyCreateModal ? "Hide" : "Create" } Reply
+                {displayReplyCreateModal ? "Hide" : "Show" } Create Reply
             </button>
             {displayReplyCreateModal && <CreateOrEditComment 
                 postId={postId}
