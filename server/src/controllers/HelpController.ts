@@ -49,31 +49,31 @@ export class HelpController {
 
         const {username, password} = req.body;
 
-        const userExists = await LoginModel.findUser(username);
+        try{
+            const userCreated = await LoginModel.createNewUser(username, password);
 
-        if(userExists !== null) {
-            return res.status(STATUS.BAD_REQUEST).json({
-                message: "A user with this username already exists. Please login",
-                code: "HC002"
+            if(userCreated === null){
+                return res.status(STATUS.BAD_REQUEST).json({
+                    message: "Could not create user. Please try again",
+                    code: "HC002"
+                });
+            }
+
+            if( userCreated?.USERNAME == username && userCreated?.PASSWORD === password ){
+                req.session.username = username;
+                return res.status(STATUS.OK).json({username: userCreated?.USERNAME , password: userCreated?.PASSWORD});
+            }
+
+        }catch(e){
+            return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
+                message: e.message,
+                code: e.code
             });
-        }
-        const userCreated = await LoginModel.createNewUser(username, password);
-
-        if(userCreated === null){
-            return res.status(STATUS.BAD_REQUEST).json({
-                message: "Could not create user. Please try again",
-                code: "HC003"
-            });
-        }
-
-        if( userCreated?.USERNAME == username && userCreated?.PASSWORD === password ){
-            req.session.username = username;
-            return res.status(STATUS.OK).json({username: userCreated?.USERNAME , password: userCreated?.PASSWORD});
         }
 
         return res.status(STATUS.CONFLICT).json({
             message: "A user was created but not with the credentials you requested. Please try to login before signing up again.",
-            code: "HC004"
+            code: "HC003"
         });
 
     }
@@ -87,7 +87,7 @@ export class HelpController {
         }catch{
             return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
                 message: "Could not logout. Please refresh the page and try again.",
-                code: "HC005"
+                code: "HC004"
             })
         }
 

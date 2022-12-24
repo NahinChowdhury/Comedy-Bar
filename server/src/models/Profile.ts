@@ -1,6 +1,6 @@
 import { client } from './index';
 
-interface ProfileInterface {
+export interface ProfileInterface {
     USERNAME?: string;
     FIRSTNAME?: string;
     LASTNAME?: string;
@@ -17,13 +17,11 @@ export class ProfileModel implements ProfileInterface {
 
     static getUserProfile(username: string): Promise<ProfileInterface | null> {
 
-        console.log("inside model")
-        console.log(username)
-
-        const query = `Select * FROM public."Profile" u WHERE u."USERNAME" = '${username}';`
+        const query = `Select * FROM public."Profile" u WHERE u."USERNAME" = $1;`
+        const params = [username]
 
         return new Promise((resolve, reject) => {
-            client.query(query)
+            client.query(query, params)
                 .then(res => {
                     const data = res.rows;
                     console.log("data")
@@ -38,8 +36,21 @@ export class ProfileModel implements ProfileInterface {
         })
     }
 
-    static updateUserProfile(username:string, firstname:string, lastname:string): Promise<ProfileInterface | null> {
+    static async updateUserProfile(username:string, firstname:string, lastname:string): Promise<ProfileInterface | null> {
         
+        // making sure user does exist before attempting to update it
+        const commentExists = await this.getUserProfile(username);
+
+        if(commentExists === null){
+            return new Promise<ProfileInterface | null>((resolve, reject) => {
+                reject(
+                    {
+                        message: "The profile you are trying to update doesn't exist. Please try to login again",
+                        code:"MP001"    
+                    })
+            })
+        }
+
         const query = `UPDATE public."Profile" p
                         SET "FIRSTNAME" = $1, "LASTNAME" = $2
                         WHERE "USERNAME" = $3

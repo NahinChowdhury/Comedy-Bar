@@ -1,6 +1,6 @@
 import { client } from './index';
 
-interface PostInterface {
+export interface PostInterface {
     POST_ID?: string;
     USERNAME?: string;
     TITLE?: string;
@@ -24,11 +24,12 @@ export class PostModel implements PostInterface {
     static getUserPost(username: string): Promise<PostInterface[] | null> {
 
         const query = `Select * FROM public."Posts" u 
-                        WHERE u."USERNAME" = '${username}'
+                        WHERE u."USERNAME" = $1
                         ORDER BY u."UPDATED_AT" DESC;`
+        const params = [username];
 
         return new Promise((resolve, reject) => {
-            client.query(query)
+            client.query(query, params)
                 .then(res => {
                     const data = res.rows;
                     console.log("data")
@@ -48,11 +49,12 @@ export class PostModel implements PostInterface {
     static getGlobalPosts(username: string): Promise<PostInterface[] | null> {
 
         const query = `Select * FROM public."Posts" u 
-                        WHERE u."USERNAME" != '${username}'
-                        ORDER BY u."UPDATED_AT" DESC;`
+                        WHERE "USERNAME" != $1
+                        ORDER BY "UPDATED_AT" DESC;`
+        const params = [username];
 
         return new Promise((resolve, reject) => {
-            client.query(query)
+            client.query(query, params)
                 .then(res => {
                     const data = res.rows;
                     resolve(
@@ -66,13 +68,51 @@ export class PostModel implements PostInterface {
         })
     }
 
-    static updateUserPost(username: string, id: string, title: string, details: string): Promise<PostInterface | null> {
+    static getOnePost(postId: string): Promise<PostInterface[] | null> {
+
+        const query = `Select * FROM public."Posts" u 
+                        WHERE u."POST_ID" = $1
+                        ORDER BY u."UPDATED_AT" DESC;`
+        const params = [postId];
+
+        return new Promise((resolve, reject) => {
+            client.query(query, params)
+                .then(res => {
+                    const data = res.rows;
+                    console.log("data")
+                    console.log(data)
+                    
+                    resolve(
+                        data.map( d=> {
+                            return new PostModel(d);
+                        })
+                    );
+                    
+                })
+                .catch(err => reject(err));
+        })
+    }
+
+    static async updateUserPost(username: string, postId: string, title: string, details: string): Promise<PostInterface | null> {
+
+        // making sure post does exist before attempting to update it
+        const postExists = await this.getOnePost(postId);
+
+        if(postExists === null || postExists.length === 0){
+            return new Promise<PostInterface | null>((resolve, reject) => {
+                reject(
+                    {
+                        message: "The post you are trying to update has been deleted.",
+                        code:"MP001"    
+                    })
+            })
+        }
 
         const query = `UPDATE public."Posts" p
                         SET "TITLE" = $1, "DETAILS" = $2, "UPDATED_AT" = now()
                         WHERE "POST_ID" = $3 AND "USERNAME" = $4
                         RETURNING *;`
-        const params = [title, details, id, username];
+        const params = [title, details, postId, username];
 
         return new Promise((resolve, reject) => {
             client.query(query, params)
@@ -92,7 +132,9 @@ export class PostModel implements PostInterface {
         })
     }
 
-    static createUserPost(username: string, title: string, details: string): Promise<PostInterface | null> {
+    static async createUserPost(username: string, title: string, details: string): Promise<PostInterface | null> {
+
+        // can check if user exists before creating but might be overkill since we already check if user session exists
 
         const query = `INSERT INTO public."Posts" ("USERNAME" , "TITLE", "DETAILS") VALUES ($1, $2, $3) returning *;`
         const params = [username, title, details,];
@@ -115,10 +157,22 @@ export class PostModel implements PostInterface {
         })
     }
 
-    static deleteUserPost(username: string, id: string): Promise<PostInterface | null> {
+    static async deleteUserPost(postId: string, username: string): Promise<PostInterface | null> {
 
-        const query = `DELETE FROM public."Posts" WHERE "USERNAME" = $1 AND "POST_ID" = $2 returning *;`
-        const params = [username, id];
+        // making sure post does exist before attempting to update it
+        const postExists = await this.getOnePost(postId);
+
+        if(postExists === null || postExists.length === 0){
+            return new Promise<PostInterface | null>((resolve, reject) => {
+                reject(
+                    {
+                        message: "The post you are trying to delete has already been deleted.",
+                        code:"MP002"    
+                    })
+            })
+        }
+        const query = `DELETE FROM public."Posts" WHERE "POST_ID" = $1 AND "USERNAME" = $2 returning *;`
+        const params = [postId, username];
 
         return new Promise((resolve, reject) => {
             client.query(query, params)

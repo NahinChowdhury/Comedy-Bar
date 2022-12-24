@@ -90,7 +90,7 @@ export const CommentSection:FunctionComponent<any> = ({postId="", showComments=f
             <button type="button" onClick={ () => {
                 setDisplayCreateModal(prevDisplayCreateModal => !prevDisplayCreateModal);
             }}>
-                {displayCreateModal ? "Hide" : "Create" } Comment
+                {displayCreateModal ? "Hide" : "Show" } Create Comment
             </button>
             {displayCreateModal && <CreateOrEditComment 
                 postId={postId}

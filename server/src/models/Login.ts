@@ -1,6 +1,6 @@
 import { client } from './index';
 
-interface UserInterface {
+export interface UserInterface {
     USERNAME?: string;
     PASSWORD?: string;
 }
@@ -14,10 +14,6 @@ export class LoginModel implements UserInterface {
     }
 
     static verifyUser(username: string, password: string): Promise<LoginModel | null> {
-
-        console.log("inside model")
-        console.log(username)
-        console.log(password)
 
         const query = `Select u."USERNAME", u."PASSWORD" FROM public."User" u WHERE u."USERNAME" = $1 AND u."PASSWORD" = $2;`;
         const params = [username, password];
@@ -39,8 +35,21 @@ export class LoginModel implements UserInterface {
     }
 
 
-    static createNewUser(username: string, password: string): Promise<LoginModel | null>{
+    static async createNewUser(username: string, password: string): Promise<LoginModel | null>{
         
+        // making sure comment does exist before attempting to update it
+        const userExists = await this.findUser(username);
+
+        if(userExists !== null){
+            return new Promise<UserInterface | null>((resolve, reject) => {
+                reject(
+                    {
+                        message: "There already exists a user with the same username",
+                        code:"LC001"
+                    })
+            })
+        }
+
         const query = `INSERT INTO public."User" ("USERNAME" , "PASSWORD") VALUES ($1, $2) RETURNING *;`;
         const params = [username, password];
 
