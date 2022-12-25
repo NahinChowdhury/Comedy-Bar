@@ -8,10 +8,13 @@ import path from "path";
 import cookieParser  from "cookie-parser";
 import * as io from 'socket.io';
 import * as http from 'http';
+import cors from 'cors';
 
 import 'dotenv/config';
 
 export class App extends Server {
+	private close: http.Server;
+
 	constructor() {
 		super();
 		// setting up session
@@ -37,8 +40,10 @@ export class App extends Server {
 			res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
 			next();
 		});
-
-
+		
+		// Enable CORS for all routes
+		this.app.use(cors());
+		
 		// Use the cookie-parser middleware
 		this.app.use(cookieParser());
 
@@ -57,14 +62,10 @@ export class App extends Server {
 			res.send(`Session variable value: ${sessionValue}`);
 		});
 		
-		this.app.listen(port, () => {
-			console.log("Server listening on port: " + port);
-		});
+		this.close = this.app.listen(port, () => {
+            console.log('Server listening on port: ' + port);
+        });
 
-		setTimeout(() => {
-
-			this.setupSocketIO();
-		}, 2000)
 	}
 
 	private applyMiddleWares() {
@@ -72,16 +73,34 @@ export class App extends Server {
 		this.app.use(bodyParser.urlencoded({ extended: false }));
 	}
 
-	private setupSocketIO(): void {
-		const httpServer = new http.Server(this.app);
-		const socket = new io.Server(httpServer);
-
-		httpServer.listen(5000);
+	initSocket() {
 		console.log("Connecting to socket")
-		socket.on('connection', (client) => {
-			console.log('A user connected');
-		});
-	}
+		
+        const io = require('socket.io')(this.close);
+
+		io.on('connection', (socket: io.Socket) => {
+			console.log('A user has connected');
+		  
+			// Broadcast a message to all clients except the one that just connected
+			socket.broadcast.emit('message', 'A new user has joined the chat');
+		  
+			// Listen for a "message" event from the client
+			socket.on('message', (message) => {
+			  console.log(`Received message: ${message}`);
+		  
+			  // Send the message back to all clients
+			  io.emit('message', message);
+			});
+		  
+			// Listen for a "disconnect" event from the client
+			socket.on('disconnect', () => {
+			  console.log('A user has disconnected');
+		  
+			  // Broadcast a message to all clients except the one that just disconnected
+			  socket.broadcast.emit('message', 'A user has left the chat');
+			});
+		  });
+    }
 
 	private async boostrap() {
 		// Connect to db

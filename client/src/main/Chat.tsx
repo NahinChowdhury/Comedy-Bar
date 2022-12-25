@@ -1,37 +1,42 @@
-import axios from "axios";
-import React, {FunctionComponent, useState, useEffect} from "react";
-import { Link } from "react-router-dom";
-import { io, Socket } from 'socket.io-client';
+import React, { FunctionComponent, useState, useEffect } from 'react';
+import io from 'socket.io-client';
+
+const socket = io();
 
 export const Chat:FunctionComponent = () => {
-    const [messages, setMessages] = React.useState<string[]>([]);
-    const socket = io("http://localhost:5000/");
+  const [message, setMessage] = useState<string>('');
+  const [messages, setMessages] = useState<string[]>([]);
 
-	console.log(socket)
-    socket.emit("hello");
+  useEffect(() => {
+    // Listen for a "message" event from the server
+    console.log("socket getting message")
+    socket.on('message', (receivedMessage) => {
+        console.log("Got message")
+        setMessages([...messages, receivedMessage]);
+    });
+  }, [messages]);
 
-    useEffect(() => {
-        socket.on('connection', () => {
-            console.log('Connected to the server');
-        });
-		console.log('socket')
-		console.log(socket)
+  const handleSendMessage = () => {
+    // Send a "message" event to the server
+    socket.emit('message', message);
+    setMessage('');
+  };
 
-        socket.on('message', (data: any) => {
-            setMessages((prevMessages) => [...prevMessages, data.message]);
-        });
-
-        return () => {
-            socket.disconnect();
-        };
-    }, []);
-
-
-    return (
+  return (
     <div>
-        {messages.map((message, index) => (
-        <p key={index}>{message}</p>
+      <input
+        type="text"
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+      />
+      <button onClick={handleSendMessage}>Send</button>
+      <ul>
+        {messages.map((m, i) => (
+          <li key={i}>{m}</li>
         ))}
+      </ul>
     </div>
-    )
+  );
 }
+
+export default Chat;
