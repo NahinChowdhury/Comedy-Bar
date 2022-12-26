@@ -19,13 +19,13 @@ export class App extends Server {
 		super();
 		// setting up session
 		this.app.use( 
-		session({
-			secret: process.env.EXPRESS_SERCET,
-			resave: true,
-			saveUninitialized: true,
-			cookie: {maxAge: 60 * 1000 * 300},
-			rolling: true // reset exipration date with every request
-		})
+			session({
+				secret: process.env.EXPRESS_SERCET,
+				resave: true,
+				saveUninitialized: true,
+				cookie: {maxAge: 60 * 1000 * 300},
+				rolling: true // reset exipration date with every request
+			})
 		);
 		this.applyMiddleWares();
 		this.boostrap();
@@ -78,29 +78,80 @@ export class App extends Server {
 		
         const io = require('socket.io')(this.close);
 
-		io.on('connection', (socket: io.Socket) => {
-			console.log('A user has connected');
-		  
-			// Broadcast a message to all clients except the one that just connected
-			socket.broadcast.emit('message', 'A new user has joined the chat');
-		  
-			// Listen for a "message" event from the client
-			socket.on('message', (message) => {
-			  console.log(`Received message: ${message}`);
-		  
-			  // Send the message back to all clients
-			  io.emit('message', message);
-			});
-		  
-			// Listen for a "disconnect" event from the client
-			socket.on('disconnect', () => {
-			  console.log('A user has disconnected');
-		  
-			  // Broadcast a message to all clients except the one that just disconnected
-			  socket.broadcast.emit('message', 'A user has left the chat');
-			});
-		  });
-    }
+		// io. anything means you are sendin the message to everyone
+		// socket. anything means you are sending the message to yourself only unless you use broadcast(then everyone but you gets it)
+	// 	io.on('connection', (socket: io.Socket) => {
+	// 		console.log('A user has connected: ' + socket.id);
+			
+	// 		// Broadcast a message to all clients except the one that just connected
+	// 		socket.broadcast.emit('receive_message', 'A new user has joined the chat');
+			
+	// 		socket.on('a', (data) => {
+	// 			console.log(data, socket.id);
+	// 			io.emit('aa', data);
+	// 		})
+	// 		socket.on('join_room', (data) => {
+	// 			console.log(data, socket.id);
+	// 			socket.join(data.room);
+	// 		})
+	// 		// Listen for a "message" event from the client
+	// 		socket.on('send_message', (data) => {
+	// 			console.log(`Received message: ${data.room}, ${data.message}, ${data.username}, ${socket.id}`);
+			
+	// 			// Send the message back to all clients
+	// 			socket.to(data.room).emit('receive_message', data);
+	// 			socket.broadcast.emit('receive_message', data);
+	// 		});
+			
+	// 		// Listen for a "disconnect" event from the client
+	// 		socket.on('disconnect', () => {
+	// 			console.log(`A user has left the chat: ${socket.id}`);
+			
+	// 			// Broadcast a message to all clients except the one that just disconnected
+	// 			socket.broadcast.emit('recieve_message', `A user has left the chat: ${socket.id}`);
+	// 		});
+	// 	});
+    // }
+
+	io.on('connection', (socket: io.Socket) => {
+		console.log(`A user has connected: ${socket.id}`);
+	  
+		// Broadcast a message to all clients except the one that just connected
+		socket.broadcast.emit('receive_message', {message: 'A new user has joined the chat', username: socket.id});
+	  
+		socket.on('join_room', (data) => {
+			console.log(`Join request received: ${data.room}, ${data.username}, ${socket.id}`);
+			
+			socket.join(data.room);
+
+			// Send the message back to all clients
+			socket.to(data.room).emit('receive_message', {message: "A new user has joined the room", username: data.username});
+		})
+
+		
+		socket.on('send_message', (data) => {
+			console.log(`Received Room message: ${data.message}, ${data.username}, ${socket.id}`);
+			
+			// Send the message back to all clients
+			io.to(data.room).emit('receive_message', data);
+		});
+		// // Listen for a "send_message" event from the client
+		// socket.on('send_message', (data) => {
+		//   	console.log(`Received message: ${data.message}, ${data.username}, ${socket.id}`);
+	  
+		// 	// Send the message back to all clients
+		// 	io.emit('receive_message', data);
+		// });
+	  
+		// Listen for a "disconnect" event from the client
+		socket.on('disconnect', () => {
+			console.log(`A user has disconnected: ${socket.id}`);
+		
+			// Broadcast a message to all clients except the one that just disconnected
+			socket.broadcast.emit('receive_message', {message: 'A user has left the chat', username: socket.id});
+		});
+	  });
+}
 
 	private async boostrap() {
 		// Connect to db
