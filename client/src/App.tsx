@@ -8,6 +8,7 @@ import { NotFound } from "./others/NotFound";
 import { Posts } from "./main/Posts";
 import { NewsFeed } from "./main/NewsFeed";
 import { Chat } from "./main/Chat";
+import { ChooseChat } from "./main/ChooseChat";
 
 import './App.css';
 
@@ -25,9 +26,6 @@ function App() {
 				<Route path="/newsFeed" element={ <PrivateRoute />  }>
 					<Route path="/newsFeed" element={<NewsFeed />}/>
 				</Route>
-				<Route path="/" element={ <PrivateRoute />  }>
-					<Route path="/hello" element={<>Hello this is hello page</>}/>
-				</Route>
 				<Route path="/profile" element={ <PrivateRoute />  }>
 					<Route path="/profile" element={ <Profile /> } />
 				</Route>
@@ -35,6 +33,9 @@ function App() {
 					<Route path="/posts" element={ <Posts /> } />
 				</Route>
 
+				<Route path="/chatRooms" element={ <PrivateRoute />  }>
+					<Route path="/chatRooms" element={ <ChooseChat /> } />
+				</Route>
 				<Route path="/chat" element={ <Chat /> } />
 				<Route path="/signup" element={ <Signup /> } />
 				<Route path="/login" element={<Login />}/>
