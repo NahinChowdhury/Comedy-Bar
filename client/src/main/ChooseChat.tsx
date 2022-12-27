@@ -6,6 +6,11 @@ export const ChooseChat:FunctionComponent = () => {
     interface UserInterface {
         username: string;
     }
+
+    interface ChatRoomInterface {
+        roomId: string;
+        existed: boolean;
+    }
     
     const [users, setUsers] = useState<UserInterface[]>([]);
 
@@ -47,7 +52,10 @@ export const ChooseChat:FunctionComponent = () => {
         // if there is an error while creating or fetching the room id, send error
         await axios.post("/api/user/chat/findChat", {otherMember: otherMember})
             .then(res => {
-                console.log(res.data)
+                const { chatRoom } = res.data;
+                console.log(chatRoom)
+                chatRoom.existed === true ? alert("Chat room already exists") : alert("Chat room was created")
+                window.location.assign(`${window.location.pathname}/${chatRoom.roomId}`);
             })
             .catch(e => {
 

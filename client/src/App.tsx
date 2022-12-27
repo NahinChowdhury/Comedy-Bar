@@ -36,6 +36,9 @@ function App() {
 				<Route path="/chatRooms" element={ <PrivateRoute />  }>
 					<Route path="/chatRooms" element={ <ChooseChat /> } />
 				</Route>
+				<Route path="/chatRooms/:chatId" element={ <PrivateRoute />  }>
+					<Route path="/chatRooms/:chatId" element={ <Chat /> } />
+				</Route>
 				<Route path="/chat" element={ <Chat /> } />
 				<Route path="/signup" element={ <Signup /> } />
 				<Route path="/login" element={<Login />}/>

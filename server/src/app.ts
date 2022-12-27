@@ -74,20 +74,20 @@ export class App extends Server {
 	}
 
 	initSocket() {
-		console.log("Connecting to socket")
+		// console.log("Connecting to socket")
 		
         const io = require('socket.io')(this.close);
 
 		// io. anything means you are sendin the message to everyone
 		// socket. anything means you are sending the message to yourself only unless you use broadcast(then everyone but you gets it)
 		io.on('connection', (socket: io.Socket) => {
-			console.log(`A user has connected: ${socket.id}`);
+			// console.log(`A user has connected: ${socket.id}`);
 		
 			// Broadcast a message to all clients except the one that just connected
 			socket.broadcast.emit('receive_message', {message: 'A new user has joined the chat', username: socket.id});
 		
 			socket.on('join_room', (data) => {
-				console.log(`Join request received: ${data.room}, ${data.username}, ${socket.id}`);
+				// console.log(`Join request received: ${data.room}, ${data.username}, ${socket.id}`);
 				
 				socket.join(data.room);
 
@@ -96,7 +96,7 @@ export class App extends Server {
 			})
 
 			socket.on('send_message', (data) => {
-				console.log(`Received Room message: ${data.message}, ${data.username}, ${socket.id}`);
+				// console.log(`Received Room message: ${data.message}, ${data.username}, ${socket.id}`);
 				
 				// Send the message back to all clients
 				io.to(data.room).emit('receive_message', data);
@@ -104,7 +104,7 @@ export class App extends Server {
 		
 			// Listen for a "disconnect" event from the client
 			socket.on('disconnect', () => {
-				console.log(`A user has disconnected: ${socket.id}`);
+				// console.log(`A user has disconnected: ${socket.id}`);
 			
 				// Broadcast a message to all clients except the one that just disconnected
 				socket.broadcast.emit('receive_message', {message: 'A user has left the chat', username: socket.id});

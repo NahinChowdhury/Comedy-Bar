@@ -1,4 +1,5 @@
 import React, { FunctionComponent, useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import io from 'socket.io-client';
 
 const socket = io();
@@ -11,8 +12,11 @@ export const Chat:FunctionComponent = () => {
     const [socketName, setSocketName] = useState<string>(socket.id);
     const [room, setRoom] = useState<string>(`${Math.round(Math.random())%2}`);
 
+    const chatId = useParams();
+    console.log('chatId');
+    console.log(chatId);
     useEffect(() => {
-        console.log("sent join req")
+        // console.log("sent join req")
         socket.emit('join_room', {room, username});
         setSocketName(socket.id);
     }, [socket])
@@ -20,7 +24,7 @@ export const Chat:FunctionComponent = () => {
     useEffect(() => {
         // Listen for a "receive_message" event from the server
         socket.on('receive_message', (data) => {
-            console.log(`Got message: ${data.message} by ${data.username}`)
+            // console.log(`Got message: ${data.message} by ${data.username}`)
             setMessages([...messages, `${data.message} by ${data.username}`]);
         });
         setSocketName(socket.id)
