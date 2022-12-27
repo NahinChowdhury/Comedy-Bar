@@ -3,7 +3,6 @@ import { Request, Response } from "express";
 import { StatusCodes as STATUS}  from "http-status-codes";
 import { convertToAMPM } from "../../utils/helperFunctions";
 import { isLoggedIn } from "../../middlewares/LoggedIn";
-import { PostModel, PostInterface } from "../../models/Post";
 import { ChatMessageInterface, ChatModel, ChatRoomInterface } from "../../models/Chat";
 
 @Controller("chat")
@@ -133,7 +132,7 @@ export class ChatController {
                     sender: message.SENDER,
                     details: message.DETAILS,
                     read: message.READ,
-                    updatedAt: message.UPDATED_AT
+                    updatedAt: convertToAMPM( new Date(message.UPDATED_AT))
                 }
             })
 
