@@ -183,7 +183,7 @@ export class ChatModel implements ChatMessageInterface, ChatRoomInterface {
             })
         }
 
-        const query = `Select * FROM public."SingleChatMessages" s WHERE s."ROOM_ID" = $1;`
+        const query = `Select * FROM public."SingleChatMessages" s WHERE s."ROOM_ID" = $1 ORDER BY s."CREATED_AT" ASC;`
         const params = [roomId];
 
         return new Promise((resolve, reject) => {
