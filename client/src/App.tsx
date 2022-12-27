@@ -7,6 +7,9 @@ import { Profile } from "./main/Profile";
 import { NotFound } from "./others/NotFound";
 import { Posts } from "./main/Posts";
 import { NewsFeed } from "./main/NewsFeed";
+import { Chat } from "./main/Chat";
+import { ChooseChat } from "./main/ChooseChat";
+
 import './App.css';
 
 function App() {
@@ -18,13 +21,10 @@ function App() {
 		
 			<Switch>
 				<Route path="/" element={ <PrivateRoute />  }>
-					<Route path="/" element={<NewsFeed />}/>
+					<Route path="/" element={ <ChooseChat /> }/>
 				</Route>
 				<Route path="/newsFeed" element={ <PrivateRoute />  }>
-					<Route path="/newsFeed" element={<NewsFeed />}/>
-				</Route>
-				<Route path="/" element={ <PrivateRoute />  }>
-					<Route path="/hello" element={<>Hello this is hello page</>}/>
+					<Route path="/newsFeed" element={ <NewsFeed /> }/>
 				</Route>
 				<Route path="/profile" element={ <PrivateRoute />  }>
 					<Route path="/profile" element={ <Profile /> } />
@@ -32,11 +32,15 @@ function App() {
 				<Route path="/posts" element={ <PrivateRoute />  }>
 					<Route path="/posts" element={ <Posts /> } />
 				</Route>
+				<Route path="/chatRooms" element={ <PrivateRoute />  }>
+					<Route path="/chatRooms" element={ <ChooseChat /> } />
+					<Route path="/chatRooms/:chatId" element={ <Chat /> } />
+				</Route>
 
 				<Route path="/signup" element={ <Signup /> } />
-				<Route path="/login" element={<Login />}/>
+				<Route path="/login" element={ <Login /> }/>
 
-				<Route path="*" element={<NotFound />} />
+				<Route path="*" element={ <NotFound /> } />
 
 			</Switch>
 		

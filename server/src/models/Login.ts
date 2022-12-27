@@ -45,7 +45,7 @@ export class LoginModel implements UserInterface {
                 reject(
                     {
                         message: "There already exists a user with the same username",
-                        code:"LC001"
+                        code:"LM001"
                     })
             })
         }
@@ -71,6 +71,8 @@ export class LoginModel implements UserInterface {
 
     static findUser(username: string): Promise<LoginModel | null> {
 
+        console.log('username')
+        console.log(username)
         const query = `Select * FROM public."User" u WHERE u."USERNAME" = $1;`
         const params = [username];
 
