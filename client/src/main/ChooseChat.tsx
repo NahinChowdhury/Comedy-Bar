@@ -1,5 +1,6 @@
 import axios from 'axios';
 import React, { FunctionComponent, useState, useEffect } from 'react';
+import { useNavigate  } from 'react-router-dom';
 
 export const ChooseChat:FunctionComponent = () => {
     
@@ -13,6 +14,8 @@ export const ChooseChat:FunctionComponent = () => {
     }
     
     const [users, setUsers] = useState<UserInterface[]>([]);
+
+    const navigate = useNavigate();
 
     // I want to request from the backend, all the users available except for me.
     // and display then in rows. User can click a button and start chat with them
@@ -53,9 +56,10 @@ export const ChooseChat:FunctionComponent = () => {
         await axios.post("/api/user/chat/findChat", {otherMember: otherMember})
             .then(res => {
                 const { chatRoom } = res.data;
-                // console.log(chatRoom)
-                // chatRoom.existed === true ? alert("Chat room already exists") : alert("Chat room was created")
-                window.location.assign(`${window.location.pathname}/${chatRoom.roomId}`);
+                console.log(chatRoom)
+                console.log("Sending to: " + `/chatRooms/${chatRoom.roomId}`)
+                chatRoom.existed === true ? alert("Chat room already exists") : alert("Chat room was created")
+                navigate(`/chatRooms/${chatRoom.roomId}`)
             })
             .catch(e => {
 
