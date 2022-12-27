@@ -21,10 +21,10 @@ function App() {
 		
 			<Switch>
 				<Route path="/" element={ <PrivateRoute />  }>
-					<Route path="/" element={<NewsFeed />}/>
+					<Route path="/" element={ <ChooseChat /> }/>
 				</Route>
 				<Route path="/newsFeed" element={ <PrivateRoute />  }>
-					<Route path="/newsFeed" element={<NewsFeed />}/>
+					<Route path="/newsFeed" element={ <NewsFeed /> }/>
 				</Route>
 				<Route path="/profile" element={ <PrivateRoute />  }>
 					<Route path="/profile" element={ <Profile /> } />
@@ -32,18 +32,18 @@ function App() {
 				<Route path="/posts" element={ <PrivateRoute />  }>
 					<Route path="/posts" element={ <Posts /> } />
 				</Route>
-
 				<Route path="/chatRooms" element={ <PrivateRoute />  }>
 					<Route path="/chatRooms" element={ <ChooseChat /> } />
-				</Route>
-				<Route path="/chatRooms/:chatId" element={ <PrivateRoute />  }>
 					<Route path="/chatRooms/:chatId" element={ <Chat /> } />
 				</Route>
-				<Route path="/chat" element={ <Chat /> } />
-				<Route path="/signup" element={ <Signup /> } />
-				<Route path="/login" element={<Login />}/>
+				{/* <Route path="/chatRooms/:chatId" element={ <PrivateRoute />  }>
+					
+				</Route> */}
 
-				<Route path="*" element={<NotFound />} />
+				<Route path="/signup" element={ <Signup /> } />
+				<Route path="/login" element={ <Login /> }/>
+
+				<Route path="*" element={ <NotFound /> } />
 
 			</Switch>
 		

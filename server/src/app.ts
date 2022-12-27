@@ -84,7 +84,7 @@ export class App extends Server {
 			// console.log(`A user has connected: ${socket.id}`);
 		
 			// Broadcast a message to all clients except the one that just connected
-			socket.broadcast.emit('receive_message', {message: 'A new user has joined the chat', username: socket.id});
+			// socket.broadcast.emit('receive_message', {message: 'A new user has joined the chat', username: socket.id});
 		
 			socket.on('join_room', (data) => {
 				// console.log(`Join request received: ${data.room}, ${data.username}, ${socket.id}`);
@@ -92,7 +92,7 @@ export class App extends Server {
 				socket.join(data.room);
 
 				// Send the message back to all clients
-				socket.to(data.room).emit('receive_message', {message: "A new user has joined the room", username: data.username});
+				// socket.to(data.room).emit('receive_message', {message: "A new user has joined the room", username: data.username});
 			})
 
 			socket.on('send_message', (data) => {
@@ -107,10 +107,10 @@ export class App extends Server {
 				// console.log(`A user has disconnected: ${socket.id}`);
 			
 				// Broadcast a message to all clients except the one that just disconnected
-				socket.broadcast.emit('receive_message', {message: 'A user has left the chat', username: socket.id});
+				// socket.broadcast.emit('receive_message', {message: 'A user has left the chat', username: socket.id});
 			});
 		});
-}
+	}
 
 	private async boostrap() {
 		// Connect to db
