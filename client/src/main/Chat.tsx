@@ -19,7 +19,7 @@ export const Chat:FunctionComponent = () => {
 
     const [username, setUsername] = useState<string>(window.localStorage.getItem('user') || ``);
     const [socketName, setSocketName] = useState<string>(socket.id);
-    const [room, setRoom] = useState<string>(`${Math.round(Math.random())%2}`);
+    const [room, setRoom] = useState<string>(``);
 
     const [hasAccess, setHasAccess] = useState<boolean>(false);
 
@@ -76,7 +76,7 @@ export const Chat:FunctionComponent = () => {
             // Listen for a "receive_message" event from the server
             socket.on('receive_message', (data) => {
                 // console.log(`Got message: ${data.message} by ${data.username}`)
-                // expecting data of format {room, details, sender, updatedAt}
+                // expecting data of format {room, messageId, sender, details, read, updatedAt}
                 setMessages([...messages, 
                     {
                         messageId: data.messageId,
@@ -92,11 +92,13 @@ export const Chat:FunctionComponent = () => {
             socket.on('message_deleted', (data) => {
                 
                 console.log("message_deleted received");
-
-                requestData();
+                
+				// Expecting data to be {room, messageId, sender, details, read, updatedAt}
+                setMessages( prevMessages => {
+                    return prevMessages.filter((message: ChatMessageInterface) => message.messageId !== data.messageId);
+                })
                 
             });
-        
         }
 
     }, [socket, messages, hasAccess]);      

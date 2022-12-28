@@ -99,6 +99,7 @@ export class App extends Server {
 				// console.log(`Received Room message: ${data.message}, ${data.username}, ${socket.id}`);
 				
 				// Send the message back to all clients
+                // Expecting data of format {room, messageId, sender, details, read, updatedAt}
 				io.to(data.room).emit('receive_message', data);
 			});
 
@@ -106,16 +107,17 @@ export class App extends Server {
 				// console.log(`Deleted Room message: ${data.message}, ${data.username}, ${socket.id}`);
 				
 				// Send the message back to all clients
+				// Expecting data to be {room, messageId, sender, details, read, updatedAt}
 				io.to(data.room).emit('message_deleted', data);
 			});
 		
 			// Listen for a "disconnect" event from the client
-			socket.on('disconnect', () => {
-				// console.log(`A user has disconnected: ${socket.id}`);
+			// socket.on('disconnect', () => {
+			// 	// console.log(`A user has disconnected: ${socket.id}`);
 			
-				// Broadcast a message to all clients except the one that just disconnected
-				// socket.broadcast.emit('receive_message', {message: 'A user has left the chat', username: socket.id});
-			});
+			// 	// Broadcast a message to all clients except the one that just disconnected
+			// 	// socket.broadcast.emit('receive_message', {message: 'A user has left the chat', username: socket.id});
+			// });
 		});
 	}
 
