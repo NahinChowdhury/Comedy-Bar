@@ -17,13 +17,13 @@ export const Chat:FunctionComponent = () => {
     const [message, setMessage] = useState<string>('');
     const [messages, setMessages] = useState<ChatMessageInterface[]>([]);
 
-    const [username, setUsername] = useState<string>(window.localStorage.getItem('user') || ``);
     const [socketName, setSocketName] = useState<string>(socket.id);
     const [room, setRoom] = useState<string>(``);
-
+    
     const [hasAccess, setHasAccess] = useState<boolean>(false);
-
+    
     const {chatId} = useParams();
+    const username = window.localStorage.getItem('user') || ``;
 
     useEffect(() => {
         // send request to backend to make sure current user has access to the chat
@@ -66,7 +66,7 @@ export const Chat:FunctionComponent = () => {
             // once you fetch all the data, then try to join the room
             requestData();
         }
-    }, [socket, chatId, hasAccess]);
+    }, [chatId, hasAccess]);
 
     useEffect(() => {
 
@@ -101,7 +101,7 @@ export const Chat:FunctionComponent = () => {
             });
         }
 
-    }, [socket, messages, hasAccess]);      
+    }, [messages, hasAccess]);      
 
     
     const requestData = async () => {
