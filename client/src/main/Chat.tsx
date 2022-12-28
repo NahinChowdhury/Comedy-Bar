@@ -59,9 +59,11 @@ export const Chat:FunctionComponent = () => {
         if(hasAccess){
             if(chatId === undefined){
                 setHasAccess(false);
+                return;
             }
 
-            // reuqest to get all the chat history.
+            setRoom(chatId || "");
+            // request to get all the chat history.
             // once you fetch all the data, then try to join the room
             requestData();
         }
@@ -113,7 +115,6 @@ export const Chat:FunctionComponent = () => {
                     });
                 }
 
-                setRoom(chatId || "");
                 joinRoom();
                 setSocketName(socket.id);
             })
@@ -149,7 +150,7 @@ export const Chat:FunctionComponent = () => {
                 .then(res => {
                     
                     // message has been saved in the database
-                    
+                    console.log("Sending to socket: " + room, messageToSend, username, convertToAMPM(new Date()))
                     // Send a "send_message" event to the server
                     socket.emit('send_message', {room, details: messageToSend, sender: username, updatedAt: convertToAMPM(new Date())});
                     setMessage('');

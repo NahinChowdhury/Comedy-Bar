@@ -118,11 +118,11 @@ export class ChatController {
         try{
             // making sure user has permission to send messages to the chat
             const messagesFound: ChatMessageInterface[] = await ChatModel.getMessages(username, chatId) as ChatMessageInterface[];
-            
+             
             if(messagesFound.length === 0) {
-                return res.status(STATUS.NO_CONTENT).json({messages: []});
+                return res.status(STATUS.OK).json({messages: messagesFound});
             }
-
+            
             console.log("messagesFound");
             console.log(messagesFound);
 
