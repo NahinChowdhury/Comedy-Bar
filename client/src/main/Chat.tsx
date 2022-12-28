@@ -5,7 +5,7 @@ import io from 'socket.io-client';
 
 const socket = io();
 
-interface ChatMessage {
+interface ChatMessageInterface {
     messageId?: string | null;
     sender?: string;
     details?: string;
@@ -15,16 +15,15 @@ interface ChatMessage {
 
 export const Chat:FunctionComponent = () => {
     const [message, setMessage] = useState<string>('');
-    const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const [messages, setMessages] = useState<ChatMessageInterface[]>([]);
 
-    const [username, setUsername] = useState<string>(window.localStorage.getItem('user') || `Guest_${Math.floor(Math.random() * 1000) + 1}`);
+    const [username, setUsername] = useState<string>(window.localStorage.getItem('user') || ``);
     const [socketName, setSocketName] = useState<string>(socket.id);
     const [room, setRoom] = useState<string>(`${Math.round(Math.random())%2}`);
 
     const [hasAccess, setHasAccess] = useState<boolean>(false);
 
     const {chatId} = useParams();
-
 
     useEffect(() => {
         // send request to backend to make sure current user has access to the chat
@@ -80,14 +79,24 @@ export const Chat:FunctionComponent = () => {
                 // expecting data of format {room, details, sender, updatedAt}
                 setMessages([...messages, 
                     {
+                        messageId: data.messageId,
                         sender: data.sender,
                         details: data.details,
-                        read: false,
+                        read: data.read,
                         updatedAt: data.updatedAt
                     }
                 ]);
             });
-            setSocketName(socket.id)
+
+            // Listen for a "receive_message" event from the server
+            socket.on('message_deleted', (data) => {
+                
+                console.log("message_deleted received");
+
+                requestData();
+                
+            });
+        
         }
 
     }, [socket, messages, hasAccess]);      
@@ -104,8 +113,9 @@ export const Chat:FunctionComponent = () => {
                 }else{
 
                     setMessages(() => {
-                        return messages.map( (message:ChatMessage) => {
+                        return messages.map( (message:ChatMessageInterface) => {
                             return {
+                                messageId: message.messageId,
                                 sender: message.sender,
                                 details: message.details,
                                 read: message.read,
@@ -148,11 +158,12 @@ export const Chat:FunctionComponent = () => {
 
             await axios.post(`/api/user/chat/${chatId}/createMessage`, {details: messageToSend})
                 .then(res => {
-                    
+                    const {messageCreated} = res.data;
+
                     // message has been saved in the database
-                    console.log("Sending to socket: " + room, messageToSend, username, convertToAMPM(new Date()))
+                    console.log("Sending to socket: " + room, messageCreated.messageId, messageCreated.sender, messageCreated.details, messageCreated.read, messageCreated.updatedAt)
                     // Send a "send_message" event to the server
-                    socket.emit('send_message', {room, details: messageToSend, sender: username, updatedAt: convertToAMPM(new Date())});
+                    socket.emit('send_message', { room, messageId: messageCreated.messageId, sender: messageCreated.sender, details: messageCreated.details, read: messageCreated.read, updatedAt: messageCreated.updatedAt });
                     setMessage('');
                 })
                 .catch(e => {
@@ -172,9 +183,35 @@ export const Chat:FunctionComponent = () => {
                 })
         }
     };
-    
-    const convertToAMPM = (date: Date) => {
-        return `${date.toLocaleTimeString('en-US', {hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true })} ${date.toLocaleString('default', { month: 'long' })} ${date.getDate()}, ${date.getFullYear()}`
+
+    const handleDeleteMessage = async (messageToBeDeleted: ChatMessageInterface) => {
+        if(hasAccess){
+            
+            await axios.post(`/api/user/chat/${chatId}/deleteMessage`, {messageId: messageToBeDeleted.messageId})
+                .then(res => {
+                    const {messageDeleted} = res.data;
+                    
+                    // message has been saved in the database
+                    console.log("Sending to socket for delete: " + room, messageDeleted.messageId, messageDeleted.sender, messageDeleted.details, messageDeleted.read, messageDeleted.updatedAt)
+                    // Send a "send_message" event to the server
+                    socket.emit('delete_message', { room, messageId: messageDeleted.messageId });
+                })
+                .catch(e => {
+
+                    const error = e.response.data;
+                    console.log(e);
+                    console.log(error);
+
+
+                    switch(e.response.status){
+                        case 401:
+                            console.log("error 401")
+                            break;
+                        default:
+                            alert(`${error.message}. CODE: ${error.code}`);
+                    }
+                })
+        }
     };
 
     return (
@@ -192,8 +229,11 @@ export const Chat:FunctionComponent = () => {
                 await handleSendMessage();
             }}>Send</button>
             <ul>
-                {messages.map((m, i) => (
-                    <li key={i}>{`${m.sender}: ${m.details} at ${m.updatedAt}`}</li>
+                {messages.map((message, i) => (
+                    <li key={i}>
+                        {`${message.sender}: ${message.details} at ${message.updatedAt}          Message ID: ${message.messageId}`}
+                        {username === message.sender && <button onClick={() => {handleDeleteMessage(message)}}>Delete</button>}
+                    </li>
                 ))}
             </ul>
         </div>:

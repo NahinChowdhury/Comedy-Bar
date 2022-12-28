@@ -101,6 +101,13 @@ export class App extends Server {
 				// Send the message back to all clients
 				io.to(data.room).emit('receive_message', data);
 			});
+
+			socket.on('delete_message', (data) => {
+				// console.log(`Deleted Room message: ${data.message}, ${data.username}, ${socket.id}`);
+				
+				// Send the message back to all clients
+				io.to(data.room).emit('message_deleted', data);
+			});
 		
 			// Listen for a "disconnect" event from the client
 			socket.on('disconnect', () => {

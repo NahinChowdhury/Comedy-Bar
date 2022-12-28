@@ -174,7 +174,58 @@ export class ChatController {
             console.log("messageCreated");
             console.log(messageCreated);
 
-            return res.status(STATUS.OK).json({message: "Message has been created."});
+            const messageCreatedRes = {
+                messageId: messageCreated.MESSAGE_ID,
+                sender: messageCreated.SENDER,
+                details: messageCreated.DETAILS,
+                read: messageCreated.READ,
+                updatedAt: convertToAMPM( new Date(messageCreated.UPDATED_AT))
+            }
+
+            return res.status(STATUS.OK).json({messageCreated: messageCreatedRes});
+            
+        }catch(e){
+            return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
+                message: e.message,
+                code: e.code
+            });
+        }
+    }
+    
+    @Post(":chatId/deleteMessage")
+    @Middleware([isLoggedIn])
+    public async deleteMessage(req: Request, res: Response): Promise<Response> {
+        
+        const username = req.session?.username;
+        const {chatId} = req.params;
+        const {messageId} = req.body;
+        console.log('chatId')
+        console.log(chatId)
+
+        try{
+            // making sure user has permission to send messages to the chat
+            const messageDeleted: ChatMessageInterface = await ChatModel.deleteMessage(username, chatId, messageId) as ChatMessageInterface;
+            
+            if(messageDeleted === null) {
+
+                return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
+                    message: "Message could not be deleted. Please try again.",
+                    code: "UCC004"
+                });
+            }
+
+            console.log("messageDeleted");
+            console.log(messageDeleted);
+
+            const messageDeletedRes = {
+                messageId: messageDeleted.MESSAGE_ID,
+                sender: messageDeleted.SENDER,
+                details: messageDeleted.DETAILS,
+                read: messageDeleted.READ,
+                updatedAt: convertToAMPM( new Date(messageDeleted.UPDATED_AT))
+            }
+
+            return res.status(STATUS.OK).json({messageDeleted: messageDeletedRes});
             
         }catch(e){
             return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
