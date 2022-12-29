@@ -1,6 +1,7 @@
 import axios from 'axios';
-import React, { FunctionComponent, useState, useEffect } from 'react';
+import React, { FunctionComponent, useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
+import { isNumber } from '../helperFunctions/smallHelpers';
 import io from 'socket.io-client';
 
 const socket = io();
@@ -24,10 +25,16 @@ export const Chat:FunctionComponent = () => {
     
     const {chatId} = useParams();
     const username = window.localStorage.getItem('user') || ``;
+    const messagesEndRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         // send request to backend to make sure current user has access to the chat
         // if not, turn off all socket functionalities
+
+        if(chatId === undefined || !isNumber(chatId)){
+            setHasAccess(false);
+            return;
+        }
 
         axios.get(`/api/user/chat/${chatId}/hasAccess`)
             .then(res => {
@@ -56,10 +63,6 @@ export const Chat:FunctionComponent = () => {
     useEffect(() => {
         
         if(hasAccess){
-            if(chatId === undefined){
-                setHasAccess(false);
-                return;
-            }
 
             setRoom(chatId || "");
             // request to get all the chat history.
@@ -105,6 +108,7 @@ export const Chat:FunctionComponent = () => {
 
     
     const requestData = async () => {
+
         await axios.get(`/api/user/chat/${chatId}/getMessages`)
             .then(res => {
                 const {messages} = res.data;
@@ -126,7 +130,7 @@ export const Chat:FunctionComponent = () => {
                         })
                     });
                 }
-
+                scrollToLastMessage();
                 joinRoom();
                 setSocketName(socket.id);
             })
@@ -156,6 +160,7 @@ export const Chat:FunctionComponent = () => {
     const handleSendMessage = async () => {
         if(hasAccess){
             
+            scrollToLastMessage();
             const messageToSend = message;
 
             await axios.post(`/api/user/chat/${chatId}/createMessage`, {details: messageToSend})
@@ -216,28 +221,61 @@ export const Chat:FunctionComponent = () => {
         }
     };
 
+    const scrollToLastMessage = () => {
+        if (messagesEndRef.current !== null) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+          }
+    }
+
     return (
         hasAccess ?
-        <div>
-            <div>User: {username}</div>
-            <div>Socket Name: {socketName}</div>
+        <div style={{ height: '80vh', display: 'flex', flexDirection: 'column' }}>
+
+            <div style={{ overflowY: 'auto' }}>
+                <ul style={{ display: 'flex', flexDirection: 'column', marginBottom: '50px' }}>
+                    {messages.map((message, i) => (
+                        <li 
+                            key={i} 
+                            style={{
+                            display: 'flex',
+                            flexDirection: message.sender === username ? 'row-reverse' : 'row',
+                            alignItems: 'center',
+                            marginBottom: 10
+                        }}>
+                            <div>
+
+                                <span style={{ color: username === message.sender? 'red' : 'inherit' }}> <strong>{`${message.sender}: `}</strong> </span> 
+                                {`${message.details} `} 
+                                <em>{`at ${message.updatedAt} `}</em>  
+                                <strong>{`Message ID: ${message.messageId} `}</strong>
+
+                                {username === message.sender && <button onClick={() => {handleDeleteMessage(message)}}>Delete</button>}
+                                {username === message.sender && <button onClick={() => {}}>Edit</button>}
+
+                            </div>
+                        </li>
+                    ))}
+                    <div ref={messagesEndRef} />
+                </ul>
+            </div>
+            
+            <div>User: <span style={{ color: 'red' }}> <strong>{username}</strong> </span></div>
             <div>Room: {room}</div>
-            <input
-                type="text"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-            />
-            <button onClick={ async () => {
-                await handleSendMessage();
-            }}>Send</button>
-            <ul>
-                {messages.map((message, i) => (
-                    <li key={i}>
-                        {`${message.sender}: ${message.details} at ${message.updatedAt}          Message ID: ${message.messageId}`}
-                        {username === message.sender && <button onClick={() => {handleDeleteMessage(message)}}>Delete</button>}
-                    </li>
-                ))}
-            </ul>
+
+            <div  style={{ display: 'flex', justifyContent: 'center'}}>
+
+                <input
+                    type="text"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    style={{ width: '75vw' }}
+                    />
+                <button onClick={ async () => {
+                    await handleSendMessage();
+                }}>Send</button>
+                
+            </div>
+            
         </div>:
         <>User does not have access to this page. Please try to log in and try again</>
     );
