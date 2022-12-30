@@ -371,20 +371,24 @@ export const Chat:FunctionComponent = () => {
           }
     }
 
-    const renderPlainMessage = (message: ChatMessageInterface) => {
+    const renderPlainMessage = (message: ChatMessageInterface, color: string) => {
         return(
             <>
-                <span style={{ color: username === message.sender? 'red' : 'inherit' }}> <strong>{`${message.sender}: `}</strong> </span> 
-                {`${message.details} `} 
-                <em>{`at ${message.createdAtString} `}</em>  
-                <strong>{`Message ID: ${message.messageId} `}</strong>
-                {message.updatedAt!.getTime() !== message.createdAt!.getTime() && <>{`(edited at ${message.updatedAtString}) `}</>}
+                <div>
+                <span style={{ color: color }}> <strong>{`${message.sender}: `}</strong> </span> 
+                <strong>{`${message.details} `}</strong> 
+                </div>
+                <div>
+
+                    <em>{`at ${message.createdAtString} `}</em>  
+                    {message.updatedAt!.getTime() !== message.createdAt!.getTime() && <>{`(edited at ${message.updatedAtString}) `}</>}
+                </div>
             </>
         )
 
     }
 
-    
+
     return (
         hasAccess ?
         <div style={{ height: '80vh', display: 'flex', flexDirection: 'column' }}>
@@ -405,7 +409,7 @@ export const Chat:FunctionComponent = () => {
                                     username !== message.sender ?
                                     <>
                                         {/* If message is not from me */}
-                                        {renderPlainMessage(message)}
+                                        {renderPlainMessage(message, "steelblue")}
                                     </>
                                     :
                                     <>
@@ -443,7 +447,7 @@ export const Chat:FunctionComponent = () => {
                                         </>
                                         :
                                         <>
-                                            {renderPlainMessage(message)}
+                                            {renderPlainMessage(message, "crimson")}
 
                                             <button 
                                                 onClick={() => {
@@ -477,7 +481,7 @@ export const Chat:FunctionComponent = () => {
                 </ul>
             </div>
             
-            <div>User: <span style={{ color: 'red' }}> <strong>{username}</strong> </span></div>
+            <div>User: <span style={{ color: 'crimson' }}> <strong>{username}</strong> </span></div>
             <div>Room: {room}</div>
 
             <div style={{ display: 'flex', justifyContent: 'center'}}>
