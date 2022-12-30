@@ -371,6 +371,20 @@ export const Chat:FunctionComponent = () => {
           }
     }
 
+    const renderPlainMessage = (message: ChatMessageInterface) => {
+        return(
+            <>
+                <span style={{ color: username === message.sender? 'red' : 'inherit' }}> <strong>{`${message.sender}: `}</strong> </span> 
+                {`${message.details} `} 
+                <em>{`at ${message.createdAtString} `}</em>  
+                <strong>{`Message ID: ${message.messageId} `}</strong>
+                {message.updatedAt!.getTime() !== message.createdAt!.getTime() && <>{`(edited at ${message.updatedAtString}) `}</>}
+            </>
+        )
+
+    }
+
+    
     return (
         hasAccess ?
         <div style={{ height: '80vh', display: 'flex', flexDirection: 'column' }}>
@@ -391,11 +405,7 @@ export const Chat:FunctionComponent = () => {
                                     username !== message.sender ?
                                     <>
                                         {/* If message is not from me */}
-                                        <span style={{ color: username === message.sender? 'red' : 'inherit' }}> <strong>{`${message.sender}: `}</strong> </span> 
-                                        {`${message.details} `} 
-                                        <em>{`at ${message.createdAtString} `}</em>  
-                                        <strong>{`Message ID: ${message.messageId} `}</strong>
-                                        {message.updatedAt!.getTime() !== message.createdAt!.getTime() && <>{`(edited at ${message.updatedAtString})`}</>}
+                                        {renderPlainMessage(message)}
                                     </>
                                     :
                                     <>
@@ -433,11 +443,7 @@ export const Chat:FunctionComponent = () => {
                                         </>
                                         :
                                         <>
-                                            <span style={{ color: username === message.sender? 'red' : 'inherit' }}> <strong>{`${message.sender}: `}</strong> </span> 
-                                            {`${message.details} `} 
-                                            <em>{`at ${message.createdAtString} `}</em>  
-                                            <strong>{`Message ID: ${message.messageId} `}</strong>
-                                            {message.updatedAt!.getTime() !== message.createdAt!.getTime() && <>{`(edited at ${message.updatedAtString})`}</>}
+                                            {renderPlainMessage(message)}
 
                                             <button 
                                                 onClick={() => {
