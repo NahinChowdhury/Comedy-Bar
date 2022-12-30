@@ -110,6 +110,14 @@ export class App extends Server {
 				// Expecting data to be {room, messageId, sender, details, read, updatedAt}
 				io.to(data.room).emit('message_deleted', data);
 			});
+			
+			socket.on('edit_message', (data) => {
+				// console.log(`Edited Room message: ${data.message}, ${data.username}, ${socket.id}`);
+				
+				// Send the message back to all clients
+				// Expecting data to be {room, messageId, sender, details, read, updatedAt}
+				io.to(data.room).emit('message_edited', data);
+			});
 		
 			// Listen for a "disconnect" event from the client
 			// socket.on('disconnect', () => {

@@ -132,7 +132,10 @@ export class ChatController {
                     sender: message.SENDER,
                     details: message.DETAILS,
                     read: message.READ,
-                    updatedAt: convertToAMPM( new Date(message.UPDATED_AT))
+                    createdAtString: convertToAMPM( new Date(message.CREATED_AT)),
+                    updatedAtString: convertToAMPM( new Date(message.UPDATED_AT)),
+                    createdAt: message.CREATED_AT,
+                    updatedAt: message.UPDATED_AT
                 }
             })
 
@@ -179,7 +182,10 @@ export class ChatController {
                 sender: messageCreated.SENDER,
                 details: messageCreated.DETAILS,
                 read: messageCreated.READ,
-                updatedAt: convertToAMPM( new Date(messageCreated.UPDATED_AT))
+                createdAtString: convertToAMPM( new Date(messageCreated.CREATED_AT)),
+                updatedAtString: convertToAMPM( new Date(messageCreated.UPDATED_AT)),
+                createdAt: messageCreated.CREATED_AT,
+                updatedAt: messageCreated.UPDATED_AT
             }
 
             return res.status(STATUS.OK).json({messageCreated: messageCreatedRes});
@@ -222,10 +228,59 @@ export class ChatController {
                 sender: messageDeleted.SENDER,
                 details: messageDeleted.DETAILS,
                 read: messageDeleted.READ,
-                updatedAt: convertToAMPM( new Date(messageDeleted.UPDATED_AT))
+                createdAtString: convertToAMPM( new Date(messageDeleted.CREATED_AT)),
+                updatedAtString: convertToAMPM( new Date(messageDeleted.UPDATED_AT)),
+                createdAt: messageDeleted.CREATED_AT,
+                updatedAt: messageDeleted.UPDATED_AT
             }
 
             return res.status(STATUS.OK).json({messageDeleted: messageDeletedRes});
+            
+        }catch(e){
+            return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
+                message: e.message,
+                code: e.code
+            });
+        }
+    }
+
+    @Put(":chatId/editMessage")
+    @Middleware([isLoggedIn])
+    public async editMessage(req: Request, res: Response): Promise<Response> {
+        
+        const username = req.session?.username;
+        const {chatId} = req.params;
+        const {messageId, messageDetails} = req.body;
+        console.log('chatId')
+        console.log(chatId)
+
+        try{
+            // making sure user has permission to send messages to the chat
+            const messageEdited: ChatMessageInterface = await ChatModel.editMessage(username, chatId, messageId, messageDetails) as ChatMessageInterface;
+            
+            if(messageEdited === null) {
+
+                return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
+                    message: "Message could not be edited. Please try again.",
+                    code: "UCC005"
+                });
+            }
+
+            console.log("messageEdited");
+            console.log(messageEdited);
+
+            const messageEditedRes = {
+                messageId: messageEdited.MESSAGE_ID,
+                sender: messageEdited.SENDER,
+                details: messageEdited.DETAILS,
+                read: messageEdited.READ,
+                createdAtString: convertToAMPM( new Date(messageEdited.CREATED_AT)),
+                updatedAtString: convertToAMPM( new Date(messageEdited.UPDATED_AT)),
+                createdAt: messageEdited.CREATED_AT,
+                updatedAt: messageEdited.UPDATED_AT
+            }
+
+            return res.status(STATUS.OK).json({messageEdited: messageEditedRes});
             
         }catch(e){
             return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
