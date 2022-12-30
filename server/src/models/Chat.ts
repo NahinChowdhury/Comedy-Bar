@@ -237,4 +237,79 @@ export class ChatModel implements ChatMessageInterface, ChatRoomInterface {
                 .catch(err => reject(err));
         })
     }
+    
+    static async editMessage(memberOne: string, roomId: string, messageId: string, details: string): Promise<ChatMessageInterface | null> {
+
+        // memberOne is the user themselves
+
+        // making sure user has permission to create the message
+        // do not need to check if user exists because this.checkUserHasAccess already checks it once
+        const userHasAccess = await this.checkUserHasAccess(memberOne, roomId);
+        if(userHasAccess === null) {
+            return new Promise<ChatMessageInterface | null>((resolve, reject) => {
+                reject(
+                    {
+                        message: "User does not have permissions to send messages to this chat.",
+                        code:"CM004"
+                    })
+            })
+        }
+
+        const query = `UPDATE public."SingleChatMessages"
+                        SET "DETAILS" = $1, "UPDATED_AT" = now()
+                        WHERE "ROOM_ID" = $2 AND "SENDER" = $3 AND "MESSAGE_ID" = $4
+                        returning *;`;
+        const params = [details, roomId, memberOne, messageId];
+
+        return new Promise((resolve, reject) => {
+            client.query(query, params)
+                .then(res => {
+                    const data = res.rows;
+                    console.log("data")
+                    console.log(data)
+                    if(data.length > 0){
+                        resolve( new ChatModel(data[0]));
+                    }else{
+                        resolve(null);
+                    }
+                })
+                .catch(err => reject(err));
+        })
+    }
+
+    static async deleteMessage(memberOne: string, roomId: string, messageId: string): Promise<ChatMessageInterface | null> {
+
+        // memberOne is the user themselves
+
+        // making sure user has permission to delete the message
+        // do not need to check if user exists because this.checkUserHasAccess already checks it once
+        const userHasAccess = await this.checkUserHasAccess(memberOne, roomId);
+        if(userHasAccess === null) {
+            return new Promise<ChatMessageInterface | null>((resolve, reject) => {
+                reject(
+                    {
+                        message: "User does not have permissions to delete messages in this chat.",
+                        code:"CM005"
+                    })
+            })
+        }
+        
+        const query = `DELETE FROM public."SingleChatMessages" WHERE "ROOM_ID" = $1 AND "SENDER" = $2 AND "MESSAGE_ID" = $3 returning *;`;
+        const params = [roomId, memberOne, messageId];
+
+        return new Promise((resolve, reject) => {
+            client.query(query, params)
+                .then(res => {
+                    const data = res.rows;
+                    console.log("data")
+                    console.log(data)
+                    if(data.length > 0){
+                        resolve( new ChatModel(data[0]));
+                    }else{
+                        resolve(null);
+                    }
+                })
+                .catch(err => reject(err));
+        })
+    }
 }

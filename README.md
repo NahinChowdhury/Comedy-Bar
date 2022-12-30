@@ -10,7 +10,7 @@ Other users get those posts recommended to them in their news feed. If they star
 They can jump to new songs and each song will have a link to the user's profile or the post.
 
 Another feature could be a search engine that pulls songs from yt and spotify for now and let's you create a playlist that links to original 
-
+We will expand the post feature by allowing user to attach images, songs, videos or even files. No limit on the number of attachments for now.
 
 
 STEPS to make sure data is consistent:
