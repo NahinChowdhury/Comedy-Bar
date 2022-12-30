@@ -19,6 +19,7 @@ export interface ChatRoomInterface {
     STATUS?: string;
     CREATED_BY?: string;
     CREATED_AT?: Date;
+    OTHER_MEMBER?: string; // this is only created as calculation in findUserChats
 }
 
 export class ChatModel implements ChatMessageInterface, ChatRoomInterface {
@@ -35,6 +36,7 @@ export class ChatModel implements ChatMessageInterface, ChatRoomInterface {
     MEMBER_TWO?: string;
     STATUS?: string;
     CREATED_BY?: string;
+    OTHER_MEMBER?: string;
 
     constructor(user: ChatMessageInterface | ChatRoomInterface) {
         Object.assign(this, user);
@@ -62,7 +64,7 @@ export class ChatModel implements ChatMessageInterface, ChatRoomInterface {
                 reject(
                     {
                         message: "The user you are trying to chat to doesn't exist anymore. Please reload the page and try again.",
-                        code:"CM002"
+                        code:"CM008"
                     })
             })
         }
@@ -86,6 +88,47 @@ export class ChatModel implements ChatMessageInterface, ChatRoomInterface {
         })
     }
 
+    static async findUserChats(memberOne: string): Promise<ChatRoomInterface[] | null> {
+
+        // memberOne is the user themselves
+        // memberTwo is the other person our user wants to chat to
+
+        // making sure user does exist before fetching all other users
+        const memberOneExists = await LoginModel.findUser(memberOne);
+        if(memberOneExists === null){
+            return new Promise<ChatRoomInterface[] | null>((resolve, reject) => {
+                reject(
+                    {
+                        message: "Please log in and try again.",
+                        code:"CM009"
+                    })
+            })
+        }
+
+        const query = `Select "ROOM_ID", 
+                        CASE
+                            WHEN "MEMBER_ONE" = $1 THEN "MEMBER_TWO"
+                            ELSE "MEMBER_ONE" 
+                        END AS "OTHER_MEMBER" 
+                        FROM public."SingleChatRoom" s WHERE (s."MEMBER_ONE" = $1 OR s."MEMBER_TWO" = $1) AND s."MEMBER_ONE" <> s."MEMBER_TWO";`
+        const params = [memberOne];
+
+        return new Promise((resolve, reject) => {
+            client.query(query, params)
+                .then(res => {
+                    const data = res.rows;
+                    console.log("data")
+                    console.log(data)
+                    resolve(
+                        data.map( d=> {
+                            return new ChatModel(d);
+                        })
+                    )
+                })
+                .catch(err => reject(err));
+        })
+    }
+
     static async findChatFromMembers(memberOne: string, memberTwo: string): Promise<ChatRoomInterface | null> {
 
         // memberOne is the user themselves
@@ -98,7 +141,7 @@ export class ChatModel implements ChatMessageInterface, ChatRoomInterface {
                 reject(
                     {
                         message: "Please log in and try again.",
-                        code:"CM001"
+                        code:"CM010"
                     })
             })
         }
@@ -178,7 +221,7 @@ export class ChatModel implements ChatMessageInterface, ChatRoomInterface {
                 reject(
                     {
                         message: "Please log in and try again.",
-                        code:"CM005"
+                        code:"CM007"
                     })
             })
         }
@@ -250,7 +293,7 @@ export class ChatModel implements ChatMessageInterface, ChatRoomInterface {
                 reject(
                     {
                         message: "User does not have permissions to send messages to this chat.",
-                        code:"CM004"
+                        code:"CM005"
                     })
             })
         }
@@ -289,7 +332,7 @@ export class ChatModel implements ChatMessageInterface, ChatRoomInterface {
                 reject(
                     {
                         message: "User does not have permissions to delete messages in this chat.",
-                        code:"CM005"
+                        code:"CM006"
                     })
             })
         }

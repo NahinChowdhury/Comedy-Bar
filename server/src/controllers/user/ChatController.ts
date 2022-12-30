@@ -4,6 +4,8 @@ import { StatusCodes as STATUS}  from "http-status-codes";
 import { convertToAMPM } from "../../utils/helperFunctions";
 import { isLoggedIn } from "../../middlewares/LoggedIn";
 import { ChatMessageInterface, ChatModel, ChatRoomInterface } from "../../models/Chat";
+import { UserInterface } from "../../models/login";
+import { UserModel } from "../../models/User";
 
 @Controller("chat")
 export class ChatController {
@@ -67,6 +69,60 @@ export class ChatController {
         }
     }
 
+    @Get("getAllUsersAndChats")
+    @Middleware([isLoggedIn])
+    public async getAllUsersAndChats(req: Request, res: Response): Promise<Response> {
+        
+        const username = req.session?.username;
+        const {chatId} = req.params;
+        console.log('chatId')
+        console.log(chatId)
+
+        
+        try{
+
+            const usersFound: UserInterface[] = await UserModel.findAllOtherUsers(username) as UserInterface[];
+            
+            if(usersFound.length === 0) {
+                return res.status(STATUS.NOT_FOUND).json({
+                    message: "No other users exist.",
+                    code: "GUC001"
+                });
+            }
+
+            const allUsers = usersFound.map(user => {
+                return {
+                    username: user.USERNAME,
+                    chatExists: false
+                }
+            });
+
+            const chatRoomsandUsersFound: ChatRoomInterface[] = await ChatModel.findUserChats(username) as ChatRoomInterface[];
+
+            // The code below checks if the usernames fetched in chatRoomsFound match the username in allUsers
+            // If they match, then there already exists a chat for this user
+            // so we set its chatExists to true
+            const allUsersAndChats = allUsers.map(item => {
+                if (chatRoomsandUsersFound.map(user => user.OTHER_MEMBER).includes(item.username)) {
+                  return {...item, chatExists: true};
+                }
+                return item;
+            });
+
+            console.log("allUsersAndChats")
+            console.log(allUsersAndChats)
+              
+            
+            return res.status(STATUS.OK).json({allUsersAndChats: allUsersAndChats});
+            
+        }catch(e){
+            return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
+                message: e.message,
+                code: e.code
+            });
+        }
+    }
+    
     @Get(":chatId/hasAccess")
     @Middleware([isLoggedIn])
     public async userHasAccess(req: Request, res: Response): Promise<Response> {

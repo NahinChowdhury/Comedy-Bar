@@ -6,6 +6,7 @@ export const ChooseChat:FunctionComponent = () => {
     
     interface UserInterface {
         username: string;
+        chatExists: boolean;
     }
 
     interface ChatRoomInterface {
@@ -21,12 +22,14 @@ export const ChooseChat:FunctionComponent = () => {
     // and display then in rows. User can click a button and start chat with them
 
     useEffect(() => { 
-        axios.get('/api/global/user/getAllOtherUsers')
+        axios.get('/api/user/chat/getAllUsersAndChats')
         .then(res => {
-            const { allUsers } = res.data;
-            console.log('allUsers')
-            console.log(allUsers)
-            setUsers(allUsers);
+            const { allUsersAndChats } = res.data;
+
+            console.log('allUsersAndChats')
+            console.log(allUsersAndChats)
+
+            setUsers(allUsersAndChats);
         })
         .catch(e => {
 
@@ -88,7 +91,9 @@ export const ChooseChat:FunctionComponent = () => {
                             <span>{user.username} </span>
                             <button onClick={() => {
                                 joinRoom(user.username)
-                            }}>Join or Start Chat</button>
+                            }}>
+                                {user.chatExists ? "Join" : "Create"} Room
+                            </button>
                             <br /><br />
                         </div>
                     )
