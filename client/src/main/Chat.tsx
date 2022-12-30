@@ -395,7 +395,7 @@ export const Chat:FunctionComponent = () => {
                                         {`${message.details} `} 
                                         <em>{`at ${message.createdAtString} `}</em>  
                                         <strong>{`Message ID: ${message.messageId} `}</strong>
-                                        {message.updatedAt !== message.createdAt && <>{`(edited at ${message.updatedAtString})`}</>}
+                                        {message.updatedAt!.getTime() !== message.createdAt!.getTime() && <>{`(edited at ${message.updatedAtString})`}</>}
                                     </>
                                     :
                                     <>
@@ -437,7 +437,7 @@ export const Chat:FunctionComponent = () => {
                                             {`${message.details} `} 
                                             <em>{`at ${message.createdAtString} `}</em>  
                                             <strong>{`Message ID: ${message.messageId} `}</strong>
-                                            {message.updatedAt !== message.createdAt && <>{`(edited at ${message.updatedAtString})`}</>}
+                                            {message.updatedAt!.getTime() !== message.createdAt!.getTime() && <>{`(edited at ${message.updatedAtString})`}</>}
 
                                             <button 
                                                 onClick={() => {
