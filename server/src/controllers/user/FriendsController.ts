@@ -28,7 +28,7 @@ export class FriendsController {
             const friends = friendsFound.map( friend => {
                 return {
                     friendId: friend.FRIEND_ID,
-                    createdAt: friend.CREATED_AT
+                    createdAt: convertToAMPM(new Date(friend.CREATED_AT))  // setting time to AM/PM
                 }
             })
 
