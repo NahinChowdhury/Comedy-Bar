@@ -10,12 +10,12 @@ export class FriendRequestController {
     
     @Get("")
     @Middleware([isLoggedIn])
-    public async getUserFriendRequests(req: Request, res: Response): Promise<Response> {
+    public async getUserFriendRequestsReceived(req: Request, res: Response): Promise<Response> {
 
         const username = req.session?.username;
 
         try{
-            const friendRequestsFound: FriendRequestInterface[] = await FriendRequestModel.getUserFriendRequests(username) as FriendRequestInterface[];
+            const friendRequestsFound: FriendRequestInterface[] = await FriendRequestModel.getUserFriendRequestsReceived(username) as FriendRequestInterface[];
 
             if(friendRequestsFound.length === 0) {
                 return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
