@@ -24,7 +24,7 @@ export class CommentModel implements CommentInterface {
         Object.assign(this, user);
     }
 
-    static getPostComment(postId: string): Promise<CommentInterface[] | null> {
+    static async getPostComment(postId: string): Promise<CommentInterface[] | null> {
 
         const query = `Select * FROM public."Comments" c 
                         WHERE "POST_ID" = $1
@@ -49,7 +49,7 @@ export class CommentModel implements CommentInterface {
         })
     }
     
-    static getCommentReplies(commentId: string): Promise<CommentInterface[] | null> {
+    static async getCommentReplies(commentId: string): Promise<CommentInterface[] | null> {
 
         const query = `Select * FROM public."Comments" c 
                         WHERE "PARENT_COMMENT_ID" = $1
@@ -74,7 +74,7 @@ export class CommentModel implements CommentInterface {
         })
     }
     
-    static getAllPostComment(postId: string): Promise<CommentInterface[] | null> {
+    static async getAllPostComment(postId: string): Promise<CommentInterface[] | null> {
 
         const query = `Select * FROM public."Comments" c 
                         WHERE "POST_ID" = $1 AND "PARENT_COMMENT_ID" IS NULL
@@ -99,7 +99,7 @@ export class CommentModel implements CommentInterface {
         })
     }
     
-    static getOneComment(commentId: string): Promise<CommentInterface[] | null> {
+    static async getOneComment(commentId: string): Promise<CommentInterface[] | null> {
 
         const query = `Select * FROM public."Comments" c 
                         WHERE "COMMENT_ID" = $1

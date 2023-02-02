@@ -13,7 +13,7 @@ export class LoginModel implements UserInterface {
         Object.assign(this, user);
     }
 
-    static verifyUser(username: string, password: string): Promise<LoginModel | null> {
+    static async verifyUser(username: string, password: string): Promise<LoginModel | null> {
 
         const query = `Select u."USERNAME", u."PASSWORD" FROM public."User" u WHERE u."USERNAME" = $1 AND u."PASSWORD" = $2;`;
         const params = [username, password];
@@ -69,10 +69,8 @@ export class LoginModel implements UserInterface {
         })
     }
 
-    static findUser(username: string): Promise<LoginModel | null> {
+    static async findUser(username: string): Promise<LoginModel | null> {
 
-        console.log('username')
-        console.log(username)
         const query = `Select * FROM public."User" u WHERE u."USERNAME" = $1;`
         const params = [username];
 

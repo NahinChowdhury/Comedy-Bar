@@ -15,9 +15,9 @@ export class FriendsModel implements FriendsInterface {
         Object.assign(this, user);
     }
 
-    static getUserFriends(username: string): Promise<FriendsInterface[]> {
+    static async getUserFriends(username: string): Promise<FriendsInterface[]> {
 
-        const query = `Select * FROM public."Friends" u WHERE u."USER_ID" = $1;`
+        const query = `Select * FROM public."Friends" u WHERE u."USER_ID" = $1 OR u."FRIEND_ID" = $1;`
         const params = [username]
 
         return new Promise((resolve, reject) => {
@@ -36,7 +36,7 @@ export class FriendsModel implements FriendsInterface {
         })
     }
 
-    static getOneFriend(username: string, friendId: string): Promise<FriendsInterface | null> {
+    static async getOneFriend(username: string, friendId: string): Promise<FriendsInterface | null> {
 
         const query = `Select * FROM public."Friends" u WHERE u."USER_ID" = $1 AND u."FRIEND_ID" = $2;`
         const params = [username, friendId]
@@ -59,7 +59,7 @@ export class FriendsModel implements FriendsInterface {
 
     static async addUserFriend(username: string, friendId: string, ): Promise<FriendsInterface | null> {
 
-        // making sure post does exist before attempting to update it
+        // making sure friend does not exist before attempting to add them
         const friendExists = await this.getOneFriend(username, friendId);
 
         if(friendExists !== null){
@@ -96,7 +96,7 @@ export class FriendsModel implements FriendsInterface {
 
     static async deleteUserFriend(username: string, friendId: string, ): Promise<FriendsInterface | null> {
 
-        // making sure post does exist before attempting to update it
+        // making sure friend does exist before attempting to delete them
         const friendExists = await this.getOneFriend(username, friendId);
 
         if(friendExists === null){

@@ -15,7 +15,7 @@ export class ProfileModel implements ProfileInterface {
         Object.assign(this, user);
     }
 
-    static getUserProfile(username: string): Promise<ProfileInterface | null> {
+    static async getUserProfile(username: string): Promise<ProfileInterface | null> {
 
         const query = `Select * FROM public."Profile" u WHERE u."USERNAME" = $1;`
         const params = [username]
