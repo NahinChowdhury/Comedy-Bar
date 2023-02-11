@@ -110,8 +110,6 @@ export class FriendRequestModel implements FriendRequestInterface {
             })
 		}
 
-
-
         const query = `INSERT INTO public."FriendRequests" ("SENDER_ID" , "RECEIVER_ID") VALUES ($1, $2) returning *;`
         const params = [senderId, receiverId]
 
@@ -136,6 +134,28 @@ export class FriendRequestModel implements FriendRequestInterface {
 
         const query = `UPDATE public."FriendRequests" SET "STATUS" = $1 WHERE "RECEIVER_ID" = $2 AND "REQUEST_ID" = $3 returning *;`
         const params = [status, receiverId, requestId]
+
+        return new Promise((resolve, reject) => {
+            client.query(query, params)
+                .then(res => {
+                    const data = res.rows;
+                    console.log("data")
+                    console.log(data)
+                    if(data.length > 0){
+                        resolve(new FriendRequestModel(data[0]));
+                    }else{
+                        resolve(null);
+                    }
+                })
+                .catch(err => reject(err));
+        })
+    }
+
+    static async cancelFriendRequest(senderId: string, requestId: string): Promise<FriendRequestInterface | null> {
+		// users can accept and reject friend requests using this single model
+
+        const query = `UPDATE public."FriendRequests" SET "STATUS" = 'calcelled' WHERE "SENDER_ID" = $2 AND "REQUEST_ID" = $3 returning *;`
+        const params = [senderId, requestId]
 
         return new Promise((resolve, reject) => {
             client.query(query, params)
