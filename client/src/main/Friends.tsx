@@ -57,7 +57,6 @@ export const Friends:FunctionComponent = () => {
             const error = e.response.data;
             console.log(e);
             console.log(error);
-            setUsers([]);
             switch(e.response.status){
                 case 401:
                     console.log("error 401")
