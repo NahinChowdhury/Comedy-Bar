@@ -32,7 +32,7 @@ export class FriendsController {
                 }
             })
 
-            return res.status(STATUS.OK).json(friends);
+            return res.status(STATUS.OK).json({friends: friends});
 
         }catch(e){
             return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
