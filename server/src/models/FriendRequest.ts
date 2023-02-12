@@ -6,6 +6,7 @@ export interface FriendRequestInterface {
     SENDER_ID?: string;
     RECEIVER_ID?: string;
     CREATED_AT?: Date;
+    UPDATED_AT?: Date;
 }
 
 export class FriendRequestModel implements FriendRequestInterface {
@@ -13,6 +14,7 @@ export class FriendRequestModel implements FriendRequestInterface {
     SENDER_ID?: string;
     RECEIVER_ID?: string;
     CREATED_AT?: Date;
+    UPDATED_AT?: Date;
 
     constructor(user: FriendRequestInterface) {
         Object.assign(this, user);
@@ -65,7 +67,7 @@ export class FriendRequestModel implements FriendRequestInterface {
         const query = `Select * FROM public."FriendRequests" u 
 						WHERE (u."SENDER_ID" IN ($1, $2) AND u."RECEIVER_ID" IN ($1, $2) AND u."SENDER_ID" != u."RECEIVER_ID") 
 						AND u."STATUS" = 'pending' 
-						ORDER BY u."CREATED_AT" DESC;`
+						ORDER BY u."UPDATED_AT" DESC;`
         const params = [senderId, receiverId]
 
         return new Promise((resolve, reject) => {
@@ -132,7 +134,7 @@ export class FriendRequestModel implements FriendRequestInterface {
 	static async updateFriendRequest(receiverId: string, requestId: string, status: 'pending' | 'rejected' | 'accepted'): Promise<FriendRequestInterface | null> {
 		// users can accept and reject friend requests using this single model
 
-        const query = `UPDATE public."FriendRequests" SET "STATUS" = $1 WHERE "RECEIVER_ID" = $2 AND "REQUEST_ID" = $3 returning *;`
+        const query = `UPDATE public."FriendRequests" SET "STATUS" = $1, "UPDATED_AT" = now() WHERE "RECEIVER_ID" = $2 AND "REQUEST_ID" = $3 returning *;`
         const params = [status, receiverId, requestId]
 
         return new Promise((resolve, reject) => {
@@ -154,7 +156,7 @@ export class FriendRequestModel implements FriendRequestInterface {
     static async cancelFriendRequest(senderId: string, requestId: string): Promise<FriendRequestInterface | null> {
 		// users can accept and reject friend requests using this single model
 
-        const query = `UPDATE public."FriendRequests" SET "STATUS" = 'calcelled' WHERE "SENDER_ID" = $2 AND "REQUEST_ID" = $3 returning *;`
+        const query = `UPDATE public."FriendRequests" SET "STATUS" = 'calcelled', "UPDATED_AT" = now() WHERE "SENDER_ID" = $1 AND "REQUEST_ID" = $2 returning *;`
         const params = [senderId, requestId]
 
         return new Promise((resolve, reject) => {
