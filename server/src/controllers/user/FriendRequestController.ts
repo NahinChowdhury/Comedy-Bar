@@ -4,6 +4,8 @@ import { StatusCodes as STATUS}  from "http-status-codes";
 import { convertToAMPM } from "../../utils/helperFunctions";
 import { isLoggedIn } from "../../middlewares/LoggedIn";
 import { FriendRequestInterface, FriendRequestModel } from "../../models/FriendRequest";
+import { UserInterface } from "../../models/login";
+import { UserModel } from "../../models/User";
 
 @Controller("friendRequests")
 export class FriendRequestController {
@@ -29,7 +31,8 @@ export class FriendRequestController {
                 return {
                     requestId: request.REQUEST_ID,
                     senderId: request.SENDER_ID,
-                    createdAt: convertToAMPM(new Date(request.CREATED_AT))  // setting time to AM/PM
+                    createdAt: convertToAMPM(new Date(request.CREATED_AT)),  // setting time to AM/PM
+                    updatedAt: convertToAMPM(new Date(request.CREATED_AT))  // setting time to AM/PM
                 }
             })
 
@@ -65,7 +68,8 @@ export class FriendRequestController {
                 return {
                     requestId: request.REQUEST_ID,
                     receiverId: request.RECEIVER_ID,
-                    createdAt: convertToAMPM(new Date(request.CREATED_AT))  // setting time to AM/PM
+                    createdAt: convertToAMPM(new Date(request.CREATED_AT)),  // setting time to AM/PM
+                    updatedAt: convertToAMPM(new Date(request.CREATED_AT))  // setting time to AM/PM
                 }
             })
 
@@ -79,6 +83,55 @@ export class FriendRequestController {
         }
     }
     
+    // fetch all users and whether 
+    @Get("getAllUsersAndFriendRequests")
+    @Middleware([isLoggedIn])
+    public async getAllUsersAndFriendRequests(req: Request, res: Response): Promise<Response> {
+        
+        const username = req.session?.username;
+        
+        try{
+
+            const usersFound: UserInterface[] = await UserModel.findAllOtherUsers(username) as UserInterface[];
+            
+            if(usersFound.length === 0) {
+                return res.status(STATUS.NOT_FOUND).json({
+                    message: "No other users exist.",
+                    code: "UFRC007"
+                });
+            }
+
+            const allUsers = usersFound.map(user => {
+                return {
+                    username: user.USERNAME,
+                    requestSent: false,
+                    requestReceived: false,
+                }
+            });
+
+            const friendRequestsSent: FriendRequestInterface[] = await FriendRequestModel.getUserFriendRequestsSent(username) as FriendRequestInterface[];
+            const friendRequestsReceived: FriendRequestInterface[] = await FriendRequestModel.getUserFriendRequestsReceived(username) as FriendRequestInterface[];
+
+            const allUsersAndRequests = allUsers.map(item => {
+                if (friendRequestsSent.map(user => user.RECEIVER_ID).includes(item.username)) {
+                    return {...item, requestSent: true};
+                }
+                if (friendRequestsReceived.map(user => user.SENDER_ID).includes(item.username)) {
+                    return {...item, requestReceived: true};
+                }
+                return item;
+            });
+
+            return res.status(STATUS.OK).json({allUsersAndRequests: allUsersAndRequests});
+            
+        }catch(e){
+            return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
+                message: e.message,
+                code: e.code
+            });
+        }
+    }
+
     // send/create friend requests
     @Post("send")
     @Middleware([isLoggedIn])
@@ -145,7 +198,7 @@ export class FriendRequestController {
 
         try{
             const {requestId} = req.params;
-            const {receiverId} = req.params;
+            const {receiverId} = req.body;
             const friendRequestsAccepted: FriendRequestInterface[] = await FriendRequestModel.updateFriendRequest(receiverId, requestId, 'accepted') as FriendRequestInterface[];
 
             if(friendRequestsAccepted.length === 0) {
@@ -173,7 +226,7 @@ export class FriendRequestController {
 
         try{
             const {requestId} = req.params;
-            const {receiverId} = req.params;
+            const {receiverId} = req.body;
             const friendRequestsRejected: FriendRequestInterface[] = await FriendRequestModel.updateFriendRequest(receiverId, requestId, 'rejected') as FriendRequestInterface[];
 
             if(friendRequestsRejected.length === 0) {
