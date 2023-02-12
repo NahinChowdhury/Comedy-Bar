@@ -21,7 +21,7 @@ export class PostModel implements PostInterface {
         Object.assign(this, user);
     }
 
-    static getUserPost(username: string): Promise<PostInterface[] | null> {
+    static async getUserPost(username: string): Promise<PostInterface[] | null> {
 
         const query = `Select * FROM public."Posts" u 
                         WHERE u."USERNAME" = $1
@@ -46,7 +46,7 @@ export class PostModel implements PostInterface {
         })
     }
     
-    static getGlobalPosts(username: string): Promise<PostInterface[] | null> {
+    static async getGlobalPosts(username: string): Promise<PostInterface[] | null> {
 
         const query = `Select * FROM public."Posts" u 
                         WHERE "USERNAME" != $1
@@ -68,7 +68,7 @@ export class PostModel implements PostInterface {
         })
     }
 
-    static getOnePost(postId: string): Promise<PostInterface[] | null> {
+    static async getOnePost(postId: string): Promise<PostInterface[] | null> {
 
         const query = `Select * FROM public."Posts" u 
                         WHERE u."POST_ID" = $1
