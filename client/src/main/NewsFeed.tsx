@@ -20,10 +20,11 @@ export const NewsFeed:FunctionComponent = () => {
     const [posts, setPosts] = useState<PostInterface[]>([]);
 
     useEffect(() => { 
-        axios.get('/api/global/posts')
+        // axios.get('/api/global/posts')
+        axios.get('/api/user/posts/friends')
         .then(res => {
-            const { globalPosts } = res.data;
-            setPosts(globalPosts);
+            const { friendPosts } = res.data;
+            setPosts(friendPosts);
             
         })
         .catch(e => {
@@ -46,42 +47,47 @@ export const NewsFeed:FunctionComponent = () => {
     return ( 
         <div className="posts">
             
-            <h1>Global Posts:</h1>
+            <h1>Friend Posts:</h1>
             
-            {posts.length > 0 && 
-            posts.map(post => {
-                return (<div key={post.postId}>
-                    <div>PostID: {post.postId}</div>
-                    <div>Username: {post.username}</div>
-                    <div>Title: {post.title}</div>
-                    <div>Details: {post.details}</div>
-                    <div>Updated last: {post.updatedAt}</div>
-                    <button type="button" onClick={ () => {setPosts(prevPosts => {
-                        return prevPosts.map(currPost => {
-                            if(currPost.postId === post.postId){
-                                return{
-                                    ...currPost,
-                                    showComments: !currPost.showComments
+            {posts.length > 0 ? 
+                posts.map(post => {
+                    return (<div key={post.postId}>
+                        <div>PostID: {post.postId}</div>
+                        <div>Username: {post.username}</div>
+                        <div>Title: {post.title}</div>
+                        <div>Details: {post.details}</div>
+                        <div>Updated last: {post.updatedAt}</div>
+                        <button type="button" onClick={ () => {setPosts(prevPosts => {
+                            return prevPosts.map(currPost => {
+                                if(currPost.postId === post.postId){
+                                    return{
+                                        ...currPost,
+                                        showComments: !currPost.showComments
+                                    }
+                                }else{
+                                    return currPost
                                 }
-                            }else{
-                                return currPost
-                            }
-                        })
-                    })}}>
-                        {post.showComments ? "Hide Comments" : "Show Comments" }
-                    </button>
-                    {post.showComments && 
-                    <div>
-                        <CommentSection
-                            postId={post.postId}
-                            showComments={post.showComments}
-                            />
-                    </div>
-                    }
-                    <hr></hr>
-                    <br/><br/><br/>
-                </div>)
-            })}
+                            })
+                        })}}>
+                            {post.showComments ? "Hide Comments" : "Show Comments" }
+                        </button>
+                        {post.showComments && 
+                        <div>
+                            <CommentSection
+                                postId={post.postId}
+                                showComments={post.showComments}
+                                />
+                        </div>
+                        }
+                        <hr></hr>
+                        <br/><br/><br/>
+                    </div>)        
+                })
+                :
+                <div>
+                    <h1>No Posts to show</h1>
+                </div>
+        }
         </div>
         
     )
