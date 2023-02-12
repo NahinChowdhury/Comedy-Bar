@@ -65,6 +65,7 @@ export class PostController {
 
                 return {
                     postId: post.POST_ID,
+                    username: post.USERNAME,
                     title: post.TITLE,
                     details: post.DETAILS,
                     updatedAt: convertToAMPM(new Date(post.UPDATED_AT))  // setting time to AM/PM
