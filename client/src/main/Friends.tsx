@@ -1,62 +1,46 @@
 import axios from "axios";
 import React, {FunctionComponent, useState, useEffect} from "react";
 
-interface UserInterface {
-    username: string;
+// requestSent means this person sent a request to out user
+// requestReceived means this person received a request from our user
+interface FriendInterface {
+    friendId: string;
+    createdAt: string;
 }
 
 interface RequestInterface {
     requestId: string,
     senderId: string,
+    receiverId: string;
     createdAt: string
 }
 
 export const Friends:FunctionComponent = () => {
 
-    const [users, setUsers] = useState<UserInterface[]>([]);
-    const [requestsReceived, setRequestsReceived] = useState<RequestInterface[]>([]);
-
-
+    const [friends, setFriends] = useState<FriendInterface[]>([]);
+    const username = window.localStorage.getItem("user") || "";
 
     useEffect(() => { 
-        axios.get('/api/global/user/getAllOtherUsers')
+        requestData();
+    },[])
+
+
+    const requestData = () => {
+        axios.get('/api/user/friends')
         .then(res => {
-            const {allUsers} = res.data;
+            const {friends} = res.data;
 
-            console.log('allUsers')
-            console.log(allUsers)
+            console.log('friends')
+            console.log(friends)
 
-            setUsers(allUsers);
+            setFriends(friends);
         })
         .catch(e => {
 
             const error = e.response.data;
             console.log(e);
             console.log(error);
-            setUsers([]);
-            switch(e.response.status){
-                case 401:
-                    console.log("error 401")
-                    break;
-                default:
-                    alert(`${error.message}. CODE: ${error.code}`);
-            }
-        })
-
-        axios.get('/api/user/friendRequests')
-        .then(res => {
-            const {requests} = res.data;
-
-            console.log('requests')
-            console.log(requests)
-
-            setRequestsReceived(requests);
-        })
-        .catch(e => {
-
-            const error = e.response.data;
-            console.log(e);
-            console.log(error);
+            setFriends([]);
             switch(e.response.status){
                 case 401:
                     console.log("error 401")
@@ -65,61 +49,51 @@ export const Friends:FunctionComponent = () => {
                     // alert(`${error.message}. CODE: ${error.code}`);
             }
         })
-    },[])
-
-    const submitData = (username: string) => {
-
-        axios.post("/api/user/friendRequests/send", {receiverId: username})
-            .then(res => {
-                // const {firstname, lastname} = res.data;
-                // console.log(res.data)
-                // setFormData(prevFormData => {
-                //     return {
-                //         ...prevFormData,
-                //         firstname: firstname,
-                //         lastname: lastname,
-                //     }
-                // });
-
-                alert("Success");
-                // window.location.reload();
-            })
-            .catch(err => {
-                const error = err.response;
-                console.log(error.data);
-            })
     }
+
+    const removeFriend = (friendId: string) => {
+
+        axios.delete(`/api/user/friends/remove/${friendId}`)
+        .then(res => {
+            requestData();
+        })
+        .catch(e => {
+            const error = e.response.data;
+            console.log(e);
+            console.log(error);
+            switch(e.response.status){
+                case 401:
+                    console.log("error 401")
+                    break;
+                default:
+                    alert(`${error.message}. CODE: ${error.code}`);
+            }
+        })
+    }
+
+
 
 
     return (
         <div className="friends">
 
-            <h1>Find out if you are friends with others</h1>
+            <h1>Here are your friends</h1>
 
-            {users.length > 0 && 
-                users.map(user => {
+            {friends.length > 0 ? 
+                friends.map(user => {
                     return (
-                        <div key={user.username}>
-                            <span>{user.username} </span>
-                            <button onClick={ () => submitData(user.username)}>
-                                Send Request
+                        <div key={user.friendId}>
+                            {`${user.friendId} since ${user.createdAt}`}
+                            <button onClick={() => removeFriend(user.friendId)}>
+                                {"Remove Friend"}
                             </button>
-                            <br /><br />
                         </div>
                     )
                 })
-            }
-
-            <h1>Requests received</h1>
-
-            {requestsReceived.length > 0 && 
-                requestsReceived.map(request => {
-                    return (
-                        <div key={request.requestId}>
-                            {`Request ID: ${request.requestId} sent by ${request.senderId} at ${request.createdAt}`}
-                        </div>
-                    )
-                })
+            :
+                <div>
+                    {"You have no friends"}
+                </div>
             }
 
         </div>
