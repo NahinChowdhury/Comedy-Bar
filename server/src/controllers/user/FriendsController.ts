@@ -27,7 +27,7 @@ export class FriendsController {
 
             const friends = friendsFound.map( friend => {
                 return {
-                    friendId: friend.FRIEND_ID,
+                    friendId: friend.FRIEND_ID === username ? friend.USER_ID : friend.FRIEND_ID,
                     createdAt: convertToAMPM(new Date(friend.CREATED_AT))  // setting time to AM/PM
                 }
             })
@@ -45,7 +45,7 @@ export class FriendsController {
     @Post("add/:friendId")
     @Middleware([isLoggedIn])
     public async addFriend(req: Request, res: Response): Promise<Response> {
-
+        // might never need this since friend row is added to db using db triggers when friend request is accepted
         const username = req.session?.username;
 		const {friendId} = req.params;
 
