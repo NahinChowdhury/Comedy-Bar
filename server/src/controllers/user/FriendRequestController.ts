@@ -6,6 +6,7 @@ import { isLoggedIn } from "../../middlewares/LoggedIn";
 import { FriendRequestInterface, FriendRequestModel } from "../../models/FriendRequest";
 import { UserInterface } from "../../models/login";
 import { UserModel } from "../../models/User";
+import { FriendsInterface, FriendsModel } from "../../models/Friends";
 
 @Controller("friendRequests")
 export class FriendRequestController {
@@ -84,9 +85,9 @@ export class FriendRequestController {
     }
     
     // fetch all users and whether 
-    @Get("getAllUsersAndFriendRequests")
+    @Get("getAllUsersAndFriendshipStatus")
     @Middleware([isLoggedIn])
-    public async getAllUsersAndFriendRequests(req: Request, res: Response): Promise<Response> {
+    public async getAllUsersAndFriendshipStatus(req: Request, res: Response): Promise<Response> {
         
         const username = req.session?.username;
         
@@ -106,23 +107,28 @@ export class FriendRequestController {
                     username: user.USERNAME,
                     requestSent: false,
                     requestReceived: false,
+                    friends: false
                 }
             });
 
             const friendRequestsSent: FriendRequestInterface[] = await FriendRequestModel.getUserFriendRequestsSent(username) as FriendRequestInterface[];
             const friendRequestsReceived: FriendRequestInterface[] = await FriendRequestModel.getUserFriendRequestsReceived(username) as FriendRequestInterface[];
+            const friends: FriendsInterface[] = await FriendsModel.getUserFriends(username) as FriendsInterface[];
 
-            const allUsersAndRequests = allUsers.map(item => {
+            const allUsersAndStatus = allUsers.map(item => {
                 if (friendRequestsSent.map(user => user.RECEIVER_ID).includes(item.username)) {
                     return {...item, requestSent: true};
                 }
                 if (friendRequestsReceived.map(user => user.SENDER_ID).includes(item.username)) {
                     return {...item, requestReceived: true};
                 }
+                if (friends.map(user => user.FRIEND_ID === username ? user.USER_ID : user.FRIEND_ID).includes(item.username)) {
+                    return {...item, friends: true};
+                }
                 return item;
             });
 
-            return res.status(STATUS.OK).json({allUsersAndRequests: allUsersAndRequests});
+            return res.status(STATUS.OK).json({allUsersAndStatus: allUsersAndStatus});
             
         }catch(e){
             return res.status(STATUS.INTERNAL_SERVER_ERROR).json({

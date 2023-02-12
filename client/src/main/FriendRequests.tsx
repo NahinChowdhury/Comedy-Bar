@@ -7,6 +7,7 @@ interface UserInterface {
     username: string;
     requestSent: boolean;
     requestReceived: boolean;
+    friends: boolean;
 }
 
 interface RequestInterface {
@@ -25,14 +26,14 @@ export const FriendRequests:FunctionComponent = () => {
     const username = window.localStorage.getItem("user") || "";
 
     useEffect(() => { 
-        axios.get('/api/user/friendRequests/getAllUsersAndFriendRequests')
+        axios.get('/api/user/friendRequests/getAllUsersAndFriendshipStatus')
         .then(res => {
-            const {allUsersAndRequests} = res.data;
+            const {allUsersAndStatus} = res.data;
 
-            console.log('allUsersAndRequests')
-            console.log(allUsersAndRequests)
+            console.log('allUsersAndStatus')
+            console.log(allUsersAndStatus)
 
-            setUsers(allUsersAndRequests);
+            setUsers(allUsersAndStatus);
         })
         .catch(e => {
 
@@ -120,8 +121,6 @@ export const FriendRequests:FunctionComponent = () => {
                 })
 
                 requestFriendrequestReceivedAndSentData();
-                alert("Success");
-                // window.location.reload();
             })
             .catch(e => {
                 const error = e.response.data;
@@ -145,17 +144,18 @@ export const FriendRequests:FunctionComponent = () => {
         .then(res => {
             
             // remove request from requestsReceived
-            // update users.requestsReceived
             setRequestsReceived(prevRequests => {
                 return prevRequests.filter(request => request.requestId !== requestId)
             })
-
+            
+            // update users.requestsReceived
             setUsers(prevUsers => {
                 return prevUsers.map(user => {
                     if(user.username === senderId){
                         return {
                             ...user,
-                            requestReceived: false
+                            requestReceived: false,
+                            friends: true
                         }
                     }
                     return user;
@@ -183,11 +183,11 @@ export const FriendRequests:FunctionComponent = () => {
         axios.post(`/api/user/friendRequests/reject/${requestId}`, {receiverId: receiverId})
         .then(res => {
             // remove request from requestsReceived
-            // update users.requestsReceived
             setRequestsReceived(prevRequests => {
                 return prevRequests.filter(request => request.requestId !== requestId)
             })
-
+            
+            // update users.requestsReceived
             setUsers(prevUsers => {
                 return prevUsers.map(user => {
                     if(user.username === senderId){
@@ -214,8 +214,41 @@ export const FriendRequests:FunctionComponent = () => {
         })
     }
 
+    const cancelRequest = (requestId: string, receiverId: string) => {
 
+        axios.post(`/api/user/friendRequests/cancel/${requestId}`)
+        .then(res => {
+            // remove request from requestsSent
+            setRequestsSent(prevRequests => {
+                return prevRequests.filter(request => request.requestId !== requestId)
+            })
 
+            // update users.requestsReceived
+            setUsers(prevUsers => {
+                return prevUsers.map(user => {
+                    if(user.username === receiverId){
+                        return {
+                            ...user,
+                            requestSent: false
+                        }
+                    }
+                    return user;
+                })
+            })
+        })
+        .catch(e => {
+            const error = e.response.data;
+            console.log(e);
+            console.log(error);
+            switch(e.response.status){
+                case 401:
+                    console.log("error 401")
+                    break;
+                default:
+                    alert(`${error.message}. CODE: ${error.code}`);
+            }
+        })
+    }
 
     return (
         <div className="friends">
@@ -227,19 +260,24 @@ export const FriendRequests:FunctionComponent = () => {
                     return (
                         <div key={user.username}>
                             <span>{user.username} </span>
-                            {user.requestSent ?
+                            {user.friends ?
                                 <button disabled>
-                                    Request sent
+                                    Friends Already
                                 </button>
                                 :
-                                user.requestReceived ?
+                                user.requestSent ?
                                     <button disabled>
-                                        Request received
+                                        Request sent
                                     </button>
                                     :
-                                    <button onClick={ () => submitData(user.username)}>
-                                        Send Request
-                                    </button>
+                                    user.requestReceived ?
+                                        <button disabled>
+                                            Request received
+                                        </button>
+                                        :
+                                        <button onClick={ () => submitData(user.username)}>
+                                            Send Request
+                                        </button>
                             }
                             <br /><br />
                         </div>
@@ -276,6 +314,10 @@ export const FriendRequests:FunctionComponent = () => {
                     return (
                         <div key={request.requestId}>
                             {`Request ID: ${request.requestId} sent to ${request.receiverId} at ${request.updatedAt}`}
+                            {/* Add a cancel button */}
+                            <button onClick={() => cancelRequest(request.requestId, request.receiverId) }>
+                                Cancel
+                            </button>
                         </div>
                     )
                 })
