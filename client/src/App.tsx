@@ -10,6 +10,7 @@ import { NewsFeed } from "./main/NewsFeed";
 import { Chat } from "./main/Chat";
 import { ChooseChat } from "./main/ChooseChat";
 import { Friends } from "./main/Friends";
+import { FriendRequests } from "./main/FriendRequests";
 
 import './App.css';
 
@@ -26,6 +27,9 @@ function App() {
 				</Route>
 				<Route path="/newsFeed" element={ <PrivateRoute />  }>
 					<Route path="/newsFeed" element={ <NewsFeed /> }/>
+				</Route>
+				<Route path="/friendRequests" element={ <PrivateRoute />  }>
+					<Route path="/friendRequests" element={ <FriendRequests /> }/>
 				</Route>
 				<Route path="/friends" element={ <PrivateRoute />  }>
 					<Route path="/friends" element={ <Friends /> }/>
