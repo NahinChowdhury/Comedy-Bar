@@ -38,7 +38,7 @@ export class FriendsModel implements FriendsInterface {
 
     static async getOneFriend(username: string, friendId: string): Promise<FriendsInterface | null> {
 
-        const query = `Select * FROM public."Friends" u WHERE u."USER_ID" = $1 AND u."FRIEND_ID" = $2;`
+        const query = `Select * FROM public."Friends" u WHERE u."USER_ID" IN ($1, $2) AND u."FRIEND_ID" IN ($1, $2) AND u."USER_ID" != u."FRIEND_ID";`
         const params = [username, friendId]
 
         return new Promise((resolve, reject) => {
@@ -108,7 +108,7 @@ export class FriendsModel implements FriendsInterface {
                     })
             })
         }
-        const query = `DELETE FROM public."Friends" WHERE "USER_ID" = $1 AND "FRIEND_ID" = $2 returning *;`
+        const query = `DELETE FROM public."Friends" WHERE "USER_ID" IN ($1, $2) AND "FRIEND_ID" IN ($1, $2) AND "USER_ID" != "FRIEND_ID" returning *;`
         const params = [username, friendId];
 
         return new Promise((resolve, reject) => {
