@@ -21,7 +21,7 @@ export class PostModel implements PostInterface {
         Object.assign(this, user);
     }
 
-    static async getUserPost(username: string): Promise<PostInterface[] | null> {
+    static async getUserPosts(username: string): Promise<PostInterface[] | null> {
 
         const query = `Select * FROM public."Posts" u 
                         WHERE u."USERNAME" = $1
@@ -46,6 +46,30 @@ export class PostModel implements PostInterface {
         })
     }
     
+    static async getFriendPosts(username: string): Promise<PostInterface[] | null> {
+
+        const query = `Select * FROM public."Posts" p
+                        LEFT JOIN public."Friends" f
+                        ON (p."USERNAME" = f."USER_ID") OR (p."USERNAME" = f."FRIEND_ID")
+                        WHERE p."USERNAME" != $1 AND (f."USER_ID" = $1 OR f."FRIEND_ID" = $1 AND f."USER_ID" != f."FRIEND_ID")
+                        ORDER BY "UPDATED_AT" DESC;`
+        const params = [username];
+
+        return new Promise((resolve, reject) => {
+            client.query(query, params)
+                .then(res => {
+                    const data = res.rows;
+                    resolve(
+                        data.map( d=> {
+                            return new PostModel(d);
+                        })
+                    );
+                    
+                })
+                .catch(err => reject(err));
+        })
+    }
+
     static async getGlobalPosts(username: string): Promise<PostInterface[] | null> {
 
         const query = `Select * FROM public."Posts" u 

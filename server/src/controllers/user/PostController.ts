@@ -15,7 +15,7 @@ export class PostController {
         const username = req.session?.username;
 
         try{
-            const postsFound: PostInterface[] = await PostModel.getUserPost(username) as PostInterface[];
+            const postsFound: PostInterface[] = await PostModel.getUserPosts(username) as PostInterface[];
 
             if(postsFound.length === 0) {
                 return res.status(STATUS.NOT_FOUND).json({
@@ -36,6 +36,43 @@ export class PostController {
 
 
             return res.status(STATUS.OK).json({userPosts: userPosts});
+            
+        }catch(e){
+            return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
+                message: e.message,
+                code: e.code
+            });
+        }
+    }
+
+    @Get("friends")
+    @Middleware([isLoggedIn])
+    public async getFriendPosts(req: Request, res: Response): Promise<Response> {
+
+        const username = req.session?.username;
+
+        try{
+            const postsFound: PostInterface[] = await PostModel.getFriendPosts(username) as PostInterface[];
+
+            if(postsFound.length === 0) {
+                return res.status(STATUS.NOT_FOUND).json({
+                    message: "User has no friend posts.",
+                    code: "UPC005"
+                });
+            }
+
+            const friendPosts = postsFound.map( post => {
+
+                return {
+                    postId: post.POST_ID,
+                    title: post.TITLE,
+                    details: post.DETAILS,
+                    updatedAt: convertToAMPM(new Date(post.UPDATED_AT))  // setting time to AM/PM
+                }
+            })
+
+
+            return res.status(STATUS.OK).json({friendPosts: friendPosts});
             
         }catch(e){
             return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
