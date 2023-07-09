@@ -4,7 +4,7 @@ import { StatusCodes as STATUS}  from "http-status-codes";
 import { convertToAMPM } from "../../utils/helperFunctions";
 import { isLoggedIn } from "../../middlewares/LoggedIn";
 import { ChatMessageInterface, ChatModel, ChatRoomInterface } from "../../models/Chat";
-import { UserInterface } from "../../models/login";
+import { UserInterface } from "../../models/Login";
 import { UserModel } from "../../models/User";
 
 @Controller("chat")
@@ -162,6 +162,40 @@ export class ChatController {
         }
     }
     
+    @Get(":chatId/getOtherMember")
+    @Middleware([isLoggedIn])
+    public async getOtherMember(req: Request, res: Response): Promise<Response> {
+        
+        const username = req.session?.username;
+        const {chatId} = req.params;
+        console.log('get chatId')
+        console.log(chatId)
+
+        try{
+            // making sure user has permission to send messages to the chat
+            const otherMemberFound: ChatMessageInterface | null = await ChatModel.findOtherChatMember(username, chatId) as ChatMessageInterface | null;
+             
+            if(otherMemberFound === null) {
+                return res.status(STATUS.NOT_FOUND).json({
+                    message: "No other member found for this chat.",
+                    code: "GUC012"
+                });
+            }
+            console.log('otherMemberFound')
+            console.log(otherMemberFound)
+            return res.status(STATUS.OK).json({ otherMember: {
+                sender: otherMemberFound.SENDER,
+                senderFullName: otherMemberFound.SENDER_FULL_NAME
+            }});
+            
+        }catch(e){
+            return res.status(STATUS.INTERNAL_SERVER_ERROR).json({
+                message: e.message,
+                code: e.code
+            });
+        }
+    }    
+    
     @Get(":chatId/getMessages")
     @Middleware([isLoggedIn])
     public async getMessage(req: Request, res: Response): Promise<Response> {
@@ -186,6 +220,7 @@ export class ChatController {
                 return {
                     messageId: message.MESSAGE_ID,
                     sender: message.SENDER,
+                    senderFullName: message.SENDER_FULL_NAME,
                     details: message.DETAILS,
                     read: message.READ,
                     createdAtString: convertToAMPM( new Date(message.CREATED_AT)),
@@ -236,6 +271,7 @@ export class ChatController {
             const messageCreatedRes = {
                 messageId: messageCreated.MESSAGE_ID,
                 sender: messageCreated.SENDER,
+                senderFullName: messageCreated.SENDER_FULL_NAME,
                 details: messageCreated.DETAILS,
                 read: messageCreated.READ,
                 createdAtString: convertToAMPM( new Date(messageCreated.CREATED_AT)),

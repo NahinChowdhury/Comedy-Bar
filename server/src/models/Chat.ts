@@ -1,5 +1,5 @@
 import { client } from './index';
-import { LoginModel, UserInterface } from './login';
+import { LoginModel, UserInterface } from './Login';
 
 export interface ChatMessageInterface {
     MESSAGE_ID?: string;
@@ -10,6 +10,7 @@ export interface ChatMessageInterface {
     CREATED_AT?: Date;
     UPDATED_AT?: Date;
     READ_AT?: Date;
+    SENDER_FULL_NAME?: string;
 }
 
 export interface ChatRoomInterface {
@@ -31,6 +32,7 @@ export class ChatModel implements ChatMessageInterface, ChatRoomInterface {
     CREATED_AT?: Date;
     UPDATED_AT?: Date;
     READ_AT?: Date;
+    SENDER_FULL_NAME?: string;
 
     MEMBER_ONE?: string;
     MEMBER_TWO?: string;
@@ -127,7 +129,52 @@ export class ChatModel implements ChatMessageInterface, ChatRoomInterface {
                 })
                 .catch(err => reject(err));
         })
+    }    
+    
+    static async findOtherChatMember(currentUser: string, roomId: string): Promise<ChatMessageInterface | null> {
+
+        // currentUser is the user themselves
+
+        // making sure user does exist before fetching all other users
+        const memberOneExists = await LoginModel.findUser(currentUser);
+        if(memberOneExists === null){
+            return new Promise<null>((resolve, reject) => {
+                reject(
+                    {
+                        message: "Please log in and try again.",
+                        code:"CM011"
+                    })
+            })
+        }
+
+        const query = `SELECT p."USERNAME" as "SENDER", 
+                        CASE
+                                WHEN p."FIRSTNAME"  <> '' OR p."LASTNAME"  <> '' THEN p."FIRSTNAME"  || ' ' || p."LASTNAME" 
+                                ELSE NULL
+                            END AS "SENDER_FULL_NAME"
+                        FROM public."SingleChatRoom" s
+                        JOIN public."Profile" p ON
+                            (s."MEMBER_ONE" = p."USERNAME" OR s."MEMBER_TWO" = p."USERNAME")
+                        WHERE s."ROOM_ID" = $2
+                            AND p."USERNAME" <> $1;`
+        const params = [currentUser, roomId];
+
+        return new Promise((resolve, reject) => {
+            client.query(query, params)
+                .then(res => {
+                    const data = res.rows;
+                    console.log("data otherMemberFound")
+                    console.log(data)
+                    if(data.length > 0){
+                        resolve( new ChatModel(data[0]));
+                    }else{
+                        resolve(null);
+                    }
+                })
+                .catch(err => reject(err));
+        })
     }
+
 
     static async findChatFromMembers(memberOne: string, memberTwo: string): Promise<ChatRoomInterface | null> {
 
@@ -226,7 +273,16 @@ export class ChatModel implements ChatMessageInterface, ChatRoomInterface {
             })
         }
 
-        const query = `Select * FROM public."SingleChatMessages" s WHERE s."ROOM_ID" = $1 ORDER BY s."CREATED_AT" ASC;`
+        const query = `Select s.*,
+                        CASE
+                                WHEN p."FIRSTNAME"  <> '' OR p."LASTNAME"  <> '' THEN p."FIRSTNAME"  || ' ' || p."LASTNAME" 
+                                ELSE NULL
+                            END AS "SENDER_FULL_NAME"
+                        FROM public."SingleChatMessages" s
+                        left join public."Profile" p
+                        on p."USERNAME" = s."SENDER" 
+                        WHERE s."ROOM_ID" = $1
+                        ORDER BY s."CREATED_AT" asc;`
         const params = [roomId];
 
         return new Promise((resolve, reject) => {
@@ -262,7 +318,15 @@ export class ChatModel implements ChatMessageInterface, ChatRoomInterface {
             })
         }
 
-        const query = `INSERT INTO public."SingleChatMessages" ("ROOM_ID", "SENDER", "DETAILS") VALUES ($1, $2, $3) returning *;`
+        const query = `INSERT INTO public."SingleChatMessages" ("ROOM_ID", "SENDER", "DETAILS") VALUES ($1, $2, $3) 
+                        returning 
+                            "SingleChatMessages".*,
+                            CASE
+                                WHEN p."FIRSTNAME"  <> '' OR p."LASTNAME"  <> '' THEN p."FIRSTNAME"  || ' ' || p."LASTNAME" 
+                                ELSE NULL
+                            END AS "SENDER_FULL_NAME"
+                        FROM public."SingleChatMessages" s
+                        JOIN public."Profile" p ON s."SENDER" = p."USERNAME";`
         const params = [roomId, memberOne, details];
 
         return new Promise((resolve, reject) => {
