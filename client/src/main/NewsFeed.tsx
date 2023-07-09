@@ -20,7 +20,6 @@ export const NewsFeed:FunctionComponent = () => {
     const [posts, setPosts] = useState<PostInterface[]>([]);
 
     useEffect(() => { 
-        // axios.get('/api/global/posts')
         axios.get('/api/user/posts/friends')
         .then(res => {
             const { friendPosts } = res.data;
@@ -76,18 +75,18 @@ export const NewsFeed:FunctionComponent = () => {
                             <CommentSection
                                 postId={post.postId}
                                 showComments={post.showComments}
-                                />
+                            />
                         </div>
                         }
                         <hr></hr>
                         <br/><br/><br/>
-                    </div>)        
+                    </div>)
                 })
                 :
                 <div>
                     <h1>No Posts to show</h1>
                 </div>
-        }
+            }
         </div>
         
     )
